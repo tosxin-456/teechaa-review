@@ -1,16 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaBook, FaPen, FaClipboard, FaRandom, FaClock, FaCalendarAlt, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { QuizData } from "../../utils/questions";
-
-const subjects = [
-    { id: 1, name: "Mathematics" },
-    { id: 2, name: "English" },
-    { id: 3, name: "Physics" },
-    { id: 4, name: "Chemistry" },
-    { id: 5, name: "Biology" },
-    { id: 6, name: "Government" },
-];
 
 const TakeWaecQuiz = () => {
     const [selectedSubjects, setSelectedSubjects] = useState([]);
@@ -18,9 +9,8 @@ const TakeWaecQuiz = () => {
     const [mode, setMode] = useState("");
     const [timeLeft, setTimeLeft] = useState(7200); // 2 hours in seconds
     const [isTimerRunning, setIsTimerRunning] = useState(false);
-    const goBack = () => {
-        navigate(-1);
-    };
+
+    const navigate = useNavigate();
 
     const toggleSubject = (id) => {
         setSelectedSubjects((prev) =>
@@ -28,12 +18,6 @@ const TakeWaecQuiz = () => {
                 ? prev.filter((subjectId) => subjectId !== id)
                 : [...prev, id]
         );
-
-        if (selectedSubjects.includes(id)) {
-            const newFilters = { ...filters };
-            delete newFilters[id];
-            setFilters(newFilters);
-        }
     };
 
     const updateFilter = (subjectId, field, value) => {
@@ -46,36 +30,43 @@ const TakeWaecQuiz = () => {
         }));
     };
 
-    const formatTime = (seconds) => {
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        return `${hrs.toString().padStart(2, "0")}:${mins
-            .toString()
-            .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    const goBack = () => {
+        navigate(-1);
     };
 
-    const startTimer = () => {
-        setIsTimerRunning(true);
-        const interval = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev > 0) return prev - 1;
-                clearInterval(interval);
-                return 0;
-            });
-        }, 1000);
+    const startQuiz = () => {
+        if (!mode) return; // Ensure mode is selected before proceeding
+
+        const selectedQuizData = QuizData.filter((subject) =>
+            selectedSubjects.includes(subject.id)
+        ).map((quiz) => {
+            const { id, subject } = quiz;
+
+            const numQuestions = filters[id]?.numQuestions || 0;
+            const subjectQuizData = QuizData.filter(
+                (q) => q.id === id && q.examType === "JAMB"
+            );
+
+            const allQuestions = subjectQuizData.flatMap((q) => q.questions || []);
+            const shuffledQuestions = allQuestions.sort(() => Math.random() - 0.5);
+            const randomQuestions = shuffledQuestions.slice(0, numQuestions);
+
+            return {
+                id,
+                subject,
+                questions: randomQuestions,
+            };
+        });
+
+        navigate("/exam", {
+            state: { selectedQuizData, timeLeft, mode },
+        });
     };
 
-    const handleTimeChange = (amount) => {
-        if (!isTimerRunning) {
-            setTimeLeft((prev) => Math.max(0, prev + amount));
-        }
-    };
-    const navigate = useNavigate()
+
 
     return (
         <div>
-            {/* Header with Back Button */}
             <div className="flex items-center mb-2 mt-6 ">
                 <button
                     onClick={goBack}
@@ -87,7 +78,7 @@ const TakeWaecQuiz = () => {
             </div>
             <div className="min-h-screen bg-gray-50 py-10 px-6">
                 <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col md:flex-row justify-between items-center">
                         <h1 className="text-3xl font-bold text-center mb-8 text-[#2148C0]">
                             Take WAEC Quiz Now
                         </h1>
@@ -100,6 +91,7 @@ const TakeWaecQuiz = () => {
                             Schedule Exam
                         </button>
                     </div>
+
                     {/* Subject Selection */}
                     <div className="mb-6">
                         <h2 className="text-lg font-semibold text-gray-700 mb-4">Select Subjects</h2>
@@ -127,16 +119,18 @@ const TakeWaecQuiz = () => {
                             Filters (for each subject)
                         </h2>
                         {selectedSubjects.map((subjectId) => {
-                            const subject = subjects.find((s) => s.id === subjectId);
                             const subjectQuizData = QuizData.filter(
-                                (quiz) => quiz.subject === subject.name && quiz.examType === "WAEC"
+                                (quiz) => quiz.id === subjectId && quiz.examType === "JAMB"
                             );
 
-                            // Extract unique years for this subject
-                            const years = [...new Set(subjectQuizData.map((quiz) => quiz.year))];
+                            const years = [
+                                ...new Set(subjectQuizData.map((quiz) => quiz.year)),
+                            ];
 
-                            // Calculate the maximum number of questions (in multiples of 5)
-                            const totalQuestions = subjectQuizData.reduce((acc, quiz) => acc + quiz.questions.length, 0);
+                            const totalQuestions = subjectQuizData.reduce(
+                                (acc, quiz) => acc + (quiz.questions?.length || 0),
+                                0
+                            );
                             const numQuestionOptions = Array.from(
                                 { length: Math.floor(totalQuestions / 5) },
                                 (_, index) => (index + 1) * 5
@@ -148,7 +142,7 @@ const TakeWaecQuiz = () => {
                                     className="border rounded-lg p-4 mb-4 bg-gray-100"
                                 >
                                     <h3 className="text-md font-semibold text-gray-800 mb-2">
-                                        {subject.name}
+                                        {subjectQuizData[0]?.subject}
                                     </h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
@@ -193,7 +187,6 @@ const TakeWaecQuiz = () => {
                                 </div>
                             );
                         })}
-
                     </div>
 
                     {/* Modes */}
@@ -209,65 +202,50 @@ const TakeWaecQuiz = () => {
                                 <span>Study</span>
                             </button>
                             <button
-                                onClick={() => setMode("practice")}
-                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "practice" ? "bg-blue-600 text-white" : "bg-gray-200"
+                                onClick={() => setMode("exam")}
+                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "exam" ? "bg-blue-600 text-white" : "bg-gray-200"
                                     }`}
                             >
                                 <FaPen className="text-2xl mb-2" />
-                                <span>Practice</span>
-                            </button>
-                            <button
-                                onClick={() => setMode("mock")}
-                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "mock" ? "bg-blue-600 text-white" : "bg-gray-200"
-                                    }`}
-                            >
-                                <FaClipboard className="text-2xl mb-2" />
-                                <span>Mock</span>
-                            </button>
-                            <button
-                                onClick={() => setMode("goat")}
-                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "goat" ? "bg-blue-600 text-white" : "bg-gray-200"
-                                    }`}
-                            >
-                                <FaRandom className="text-2xl mb-2" />
-                                <span>GOAT</span>
+                                <span>Exam</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* Timer */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-4">Set Timer</h2>
-                        <div className="flex items-center gap-4">
-                            <FaClock className="text-blue-600 text-2xl" />
-                            <input
-                                type="time"
-                                step="1" // Allows specifying hours, minutes, and seconds
-                                value={new Date(timeLeft * 1000).toISOString().substr(11, 8)} // Converts seconds to HH:MM:SS
-                                onChange={(e) => {
-                                    const [hours, minutes, seconds] = e.target.value.split(":").map(Number);
-                                    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-                                    setTimeLeft(totalSeconds);
-                                }}
-                                className="p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700"
-                            />
+                    {/* Timer - Conditionally Rendered based on Mode */}
+                    {mode === "exam" && (
+                        <div className="mb-6">
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4">Set Timer</h2>
+                            <div className="flex items-center gap-4">
+                                <FaClock className="text-blue-600 text-2xl" />
+                                <input
+                                    type="time"
+                                    step="1"
+                                    value={new Date(timeLeft * 1000).toISOString().substr(11, 8)}
+                                    onChange={(e) => {
+                                        const [hours, minutes, seconds] = e.target.value.split(":").map(Number);
+                                        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                                        setTimeLeft(totalSeconds);
+                                    }}
+                                    className="p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700"
+                                />
+                            </div>
                         </div>
-                    </div>
-
-
+                    )}
 
                     {/* Start Quiz Button */}
                     <div className="text-center">
                         <button
-                            onClick={()=>navigate('/exam')}
-                            className="bg-blue-600 text-white px-6 py-3 rounded-md shadow-lg hover:bg-blue-700 transition"
+                            onClick={startQuiz}
+                            disabled={!mode}
+                            className={`px-6 py-3 rounded-md shadow-lg transition ${mode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                                }`}
                         >
                             Start Quiz
                         </button>
                     </div>
                 </div>
             </div>
-            {/* Footer */}
             <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">
                 <p>&copy; {new Date().getFullYear()} TeeChaa CBT Application. All rights reserved.</p>
             </footer>
