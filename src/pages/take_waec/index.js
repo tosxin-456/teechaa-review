@@ -120,7 +120,7 @@ const TakeWaecQuiz = () => {
                         </h2>
                         {selectedSubjects.map((subjectId) => {
                             const subjectQuizData = QuizData.filter(
-                                (quiz) => quiz.id === subjectId && quiz.examType === "JAMB"
+                                (quiz) => quiz.id === subjectId && quiz.examType === "WAEC"
                             );
 
                             const years = [
