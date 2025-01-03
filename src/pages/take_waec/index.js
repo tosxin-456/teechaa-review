@@ -220,8 +220,8 @@ const TakeWaecQuiz = () => {
                                 <FaClock className="text-blue-600 text-2xl" />
                                 <input
                                     type="time"
-                                    step="1"
-                                    value={new Date(timeLeft * 1000).toISOString().substr(11, 8)}
+                                    step="3600"
+                                    value={new Date(timeLeft * 1000).toISOString().substr(11, 8)} // HH:mm:ss
                                     onChange={(e) => {
                                         const [hours, minutes, seconds] = e.target.value.split(":").map(Number);
                                         const totalSeconds = hours * 3600 + minutes * 60 + seconds;
@@ -229,6 +229,7 @@ const TakeWaecQuiz = () => {
                                     }}
                                     className="p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700"
                                 />
+
                             </div>
                         </div>
                     )}
