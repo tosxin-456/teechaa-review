@@ -80,7 +80,7 @@ const TakeJambQuiz = () => {
                 <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <h1 className="text-3xl font-bold text-center mb-8 text-[#2148C0]">
-                            Take WAEC Quiz Now
+                            Take JAMB Quiz Now
                         </h1>
 
                         <button
@@ -120,7 +120,7 @@ const TakeJambQuiz = () => {
                         </h2>
                         {selectedSubjects.map((subjectId) => {
                             const subjectQuizData = QuizData.filter(
-                                (quiz) => quiz.id === subjectId && quiz.examType === "WAEC"
+                                (quiz) => quiz.id === subjectId && quiz.examType === "JAMB"
                             );
 
                             const years = [
