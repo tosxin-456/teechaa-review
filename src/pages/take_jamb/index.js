@@ -3,7 +3,7 @@ import { FaBook, FaPen, FaClipboard, FaRandom, FaClock, FaCalendarAlt, FaArrowLe
 import { useNavigate } from "react-router-dom";
 import { QuizData } from "../../utils/questions";
 
-const TakeWaecQuiz = () => {
+const TakeJambQuiz = () => {
     const [selectedSubjects, setSelectedSubjects] = useState([]);
     const [filters, setFilters] = useState({});
     const [mode, setMode] = useState("");
@@ -254,4 +254,4 @@ const TakeWaecQuiz = () => {
     );
 };
 
-export default TakeWaecQuiz;
+export default TakeJambQuiz;
