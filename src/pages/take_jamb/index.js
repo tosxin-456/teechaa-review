@@ -3,7 +3,7 @@ import { FaBook, FaPen, FaClipboard, FaRandom, FaClock, FaCalendarAlt, FaArrowLe
 import { useNavigate } from "react-router-dom";
 import { QuizData } from "../../utils/questions";
 
-const TakeJambQuiz = () => {
+const TakeWaecQuiz = () => {
     const [selectedSubjects, setSelectedSubjects] = useState([]);
     const [filters, setFilters] = useState({});
     const [mode, setMode] = useState("");
@@ -120,7 +120,7 @@ const TakeJambQuiz = () => {
                         </h2>
                         {selectedSubjects.map((subjectId) => {
                             const subjectQuizData = QuizData.filter(
-                                (quiz) => quiz.id === subjectId && quiz.examType === "JAMB"
+                                (quiz) => quiz.id === subjectId && quiz.examType === "WAEC"
                             );
 
                             const years = [
@@ -220,8 +220,8 @@ const TakeJambQuiz = () => {
                                 <FaClock className="text-blue-600 text-2xl" />
                                 <input
                                     type="time"
-                                    step="1"
-                                    value={new Date(timeLeft * 1000).toISOString().substr(11, 8)}
+                                    step="3600"
+                                    value={new Date(timeLeft * 1000).toISOString().substr(11, 8)} // HH:mm:ss
                                     onChange={(e) => {
                                         const [hours, minutes, seconds] = e.target.value.split(":").map(Number);
                                         const totalSeconds = hours * 3600 + minutes * 60 + seconds;
@@ -229,6 +229,7 @@ const TakeJambQuiz = () => {
                                     }}
                                     className="p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700"
                                 />
+
                             </div>
                         </div>
                     )}
@@ -253,4 +254,4 @@ const TakeJambQuiz = () => {
     );
 };
 
-export default TakeJambQuiz;
+export default TakeWaecQuiz;
