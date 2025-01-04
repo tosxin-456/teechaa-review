@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { FaBook, FaPen, FaClipboard, FaRandom, FaClock, FaCalendarAlt, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { QuizData } from "../../utils/questions";
+import quizData from "../../utils/questions/index.json";
 
 const TakeJambQuiz = () => {
     const [selectedSubjects, setSelectedSubjects] = useState([]);
     const [filters, setFilters] = useState({});
     const [mode, setMode] = useState("");
     const [timeLeft, setTimeLeft] = useState(7200); // 2 hours in seconds
-    const [isTimerRunning, setIsTimerRunning] = useState(false);
 
     const navigate = useNavigate();
 
@@ -37,19 +36,14 @@ const TakeJambQuiz = () => {
     const startQuiz = () => {
         if (!mode) return; // Ensure mode is selected before proceeding
 
-        const selectedQuizData = QuizData.filter((subject) =>
+        const selectedQuizData = quizData.filter((subject) =>
             selectedSubjects.includes(subject.id)
         ).map((quiz) => {
             const { id, subject } = quiz;
-
-            const numQuestions = filters[id]?.numQuestions || 0;
-            const subjectQuizData = QuizData.filter(
-                (q) => q.id === id && q.examType === "JAMB"
-            );
-
-            const allQuestions = subjectQuizData.flatMap((q) => q.questions || []);
-            const shuffledQuestions = allQuestions.sort(() => Math.random() - 0.5);
-            const randomQuestions = shuffledQuestions.slice(0, numQuestions);
+            const allQuestions = quiz.questions || [];
+            const randomQuestions = mode === "exam"
+                ? allQuestions.sort(() => Math.random() - 0.5).slice(0, Math.min(40, allQuestions.length))
+                : allQuestions;
 
             return {
                 id,
@@ -63,11 +57,9 @@ const TakeJambQuiz = () => {
         });
     };
 
-
-
     return (
         <div>
-            <div className="flex items-center mb-2 mt-6 ">
+            <div className="flex items-center mb-2 mt-6">
                 <button
                     onClick={goBack}
                     className="flex items-center ml-[30px] gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
@@ -96,9 +88,9 @@ const TakeJambQuiz = () => {
                     <div className="mb-6">
                         <h2 className="text-lg font-semibold text-gray-700 mb-4">Select Subjects</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            {QuizData.map((subject) => (
+                            {quizData.map((subject, index) => (
                                 <label
-                                    key={subject.id}
+                                    key={index}
                                     className="flex items-center gap-2 cursor-pointer"
                                 >
                                     <input
@@ -114,37 +106,28 @@ const TakeJambQuiz = () => {
                     </div>
 
                     {/* Filters for Each Subject */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                            Filters (for each subject)
-                        </h2>
-                        {selectedSubjects.map((subjectId) => {
-                            const subjectQuizData = QuizData.filter(
-                                (quiz) => quiz.id === subjectId && quiz.examType === "JAMB"
-                            );
+                    {mode === "study" && (
+                        <div className="mb-6">
+                            <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                                Filters (for each subject)
+                            </h2>
+                            {selectedSubjects.map((subjectId) => {
+                                const subjectQuizData = quizData.filter(
+                                    (quiz) => quiz.id === subjectId && quiz.examType === "JAMB"
+                                );
 
-                            const years = [
-                                ...new Set(subjectQuizData.map((quiz) => quiz.year)),
-                            ];
+                                const years = [
+                                    ...new Set(subjectQuizData.map((quiz) => quiz.year)),
+                                ];
 
-                            const totalQuestions = subjectQuizData.reduce(
-                                (acc, quiz) => acc + (quiz.questions?.length || 0),
-                                0
-                            );
-                            const numQuestionOptions = Array.from(
-                                { length: Math.floor(totalQuestions / 5) },
-                                (_, index) => (index + 1) * 5
-                            );
-
-                            return (
-                                <div
-                                    key={subjectId}
-                                    className="border rounded-lg p-4 mb-4 bg-gray-100"
-                                >
-                                    <h3 className="text-md font-semibold text-gray-800 mb-2">
-                                        {subjectQuizData[0]?.subject}
-                                    </h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                return (
+                                    <div
+                                        key={subjectId}
+                                        className="border rounded-lg p-4 mb-4 bg-gray-100"
+                                    >
+                                        <h3 className="text-md font-semibold text-gray-800 mb-2">
+                                            {subjectQuizData[0]?.subject}
+                                        </h3>
                                         <div>
                                             <label className="block font-semibold text-gray-700 mb-1">
                                                 Year
@@ -164,30 +147,11 @@ const TakeJambQuiz = () => {
                                                 ))}
                                             </select>
                                         </div>
-                                        <div>
-                                            <label className="block font-semibold text-gray-700 mb-1">
-                                                Number of Questions
-                                            </label>
-                                            <select
-                                                value={filters[subjectId]?.numQuestions || ""}
-                                                onChange={(e) =>
-                                                    updateFilter(subjectId, "numQuestions", e.target.value)
-                                                }
-                                                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-600"
-                                            >
-                                                <option value="">Select Number</option>
-                                                {numQuestionOptions.map((num) => (
-                                                    <option key={num} value={num}>
-                                                        {num}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
                     {/* Modes */}
                     <div className="mb-6">
@@ -219,17 +183,28 @@ const TakeJambQuiz = () => {
                             <div className="flex items-center gap-4">
                                 <FaClock className="text-blue-600 text-2xl" />
                                 <input
-                                    type="time"
-                                    step="3600"
-                                    value={new Date(timeLeft * 1000).toISOString().substr(11, 8)} // HH:mm:ss
+                                    type="number"
+                                    min="0"
+                                    max="2"
+                                    value={Math.floor(timeLeft / 3600)}
                                     onChange={(e) => {
-                                        const [hours, minutes, seconds] = e.target.value.split(":").map(Number);
-                                        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-                                        setTimeLeft(totalSeconds);
+                                        const hours = parseInt(e.target.value, 10) || 0;
+                                        setTimeLeft(hours * 3600 + (timeLeft % 3600));
                                     }}
-                                    className="p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700"
+                                    className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
                                 />
-
+                                <span className="text-lg font-bold">:</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="59"
+                                    value={Math.floor((timeLeft % 3600) / 60)}
+                                    onChange={(e) => {
+                                        const minutes = parseInt(e.target.value, 10) || 0;
+                                        setTimeLeft(Math.floor(timeLeft / 3600) * 3600 + minutes * 60);
+                                    }}
+                                    className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
+                                />
                             </div>
                         </div>
                     )}

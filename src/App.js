@@ -17,6 +17,7 @@ import TakeJambQuiz from "./pages/take_jamb";
 import TakeWaecQuiz from "./pages/take_waec";
 import ScheuleExam from "./pages/schedule_exam";
 import ExamPage from "./pages/exam _page";
+import Results2Page from "./test";
 
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
           <Route path="/take-waec" element={<TakeWaecQuiz />} />
           <Route path="/schedule-exam" element={<ScheuleExam />} />
           <Route path="/exam" element={<ExamPage />} />
+          <Route path="/results" element={<Results2Page />} />
 
         </Routes>
       </Router>

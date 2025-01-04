@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaGraduationCap, FaUniversity, FaArrowLeft } from "react-icons/fa";
 import { examHistory, studentAnswers } from "../../utils/result_data";
-import { QuizData } from "../../utils/questions";
+import QuizData from "../../utils/questions";
 
 const SelectQuiz = () => {
     const navigate = useNavigate();

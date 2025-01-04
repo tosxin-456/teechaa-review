@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import { QuizData } from "../../utils/questions";
+import  QuizData  from "../../utils/questions";
 import { studentAnswers } from "../../utils/result_data";
 import { useNavigate } from "react-router-dom";
 

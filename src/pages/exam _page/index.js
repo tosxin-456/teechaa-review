@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { IoIosAlarm } from "react-icons/io";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,8 +6,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 const ExamPage = () => {
     const { state } = useLocation();
     const { selectedQuizData, timeLeft: initialTimeLeft, mode } = state || {};
+
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [timeLeft, setTimeLeft] = useState(initialTimeLeft || 300);
+    const [selectedAnswers, setSelectedAnswers] = useState({});
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const navigate = useNavigate();
@@ -52,6 +54,12 @@ const ExamPage = () => {
     };
 
     const handleBack = () => {
+        if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+        }
+    };
+
+    const handleExit = () => {
         setShowConfirmModal(true);
     };
 
@@ -72,6 +80,32 @@ const ExamPage = () => {
     const toggleSidebar = () => {
         setIsSidebarOpen((prev) => !prev);
     };
+
+    const handleOptionSelect = (questionIndex, optionIndex) => {
+        setSelectedAnswers((prev) => ({
+            ...prev,
+            [questionIndex]: optionIndex,
+        }));
+    };
+
+    const handleSubmit = () => {
+        const results = currentSubjectData.questions.map((question, index) => ({
+            question: question.question,
+            selectedOption: selectedAnswers[index],
+            correctOption: question.correctOption,
+            isCorrect: selectedAnswers[index] === question.correctOption,
+        }));
+
+        console.log("Exam Results:", results);
+        navigate("/results", { state: { results, selectedSubject } });
+    };
+
+    // Use MathJax to render the questions when the question changes
+    useEffect(() => {
+        if (window.MathJax) {
+            window.MathJax.typesetPromise();
+        }
+    }, [currentQuestionIndex, currentSubjectData]);
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-r from-gray-100 to-gray-200">
@@ -101,7 +135,7 @@ const ExamPage = () => {
                 <main className="flex-1 p-4 sm:p-6 bg-white shadow-lg rounded-lg mx-4 sm:mx-6">
                     <div className="text-center justify-between flex mb-6">
                         <button
-                            onClick={handleBack}
+                            onClick={handleExit}
                             className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
                         >
                             <FaArrowLeft className="text-xl" />
@@ -127,15 +161,22 @@ const ExamPage = () => {
                         )}
                     </div>
 
-                    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md">
-                        <h3 className="text-base sm:text-lg font-semibold mb-4">
-                            {currentSubjectData?.questions[currentQuestionIndex]?.question}
-                        </h3>
+                    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md overflow-y-auto ">
+                        <h3
+                            className="text-base sm:text-lg font-semibold mb-4"
+                            dangerouslySetInnerHTML={{
+                                __html: currentSubjectData?.questions[currentQuestionIndex]?.question,
+                            }}
+                        />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {currentSubjectData?.questions[currentQuestionIndex]?.options.map((option, index) => (
                                 <div
                                     key={index}
-                                    className="p-4 rounded-lg shadow-md border border-gray-300"
+                                    className={`p-4 rounded-lg shadow-md border border-gray-300 cursor-pointer ${selectedAnswers[currentQuestionIndex] === index
+                                            ? "bg-blue-100 border-blue-500"
+                                            : "hover:bg-gray-200"
+                                        }`}
+                                    onClick={() => handleOptionSelect(currentQuestionIndex, index)}
                                 >
                                     <span>
                                         {String.fromCharCode(65 + index)}. {option}
@@ -156,24 +197,29 @@ const ExamPage = () => {
                         >
                             <FaArrowLeft className="inline mr-2" /> Back
                         </button>
-                        <button
-                            onClick={handleNext}
-                            className={`px-4 py-2 rounded-lg ${currentQuestionIndex < totalQuestions - 1
-                                    ? "bg-[#2148C0] text-white hover:bg-blue-600"
-                                    : "bg-gray-300 text-gray-500"
-                                }`}
-                            disabled={currentQuestionIndex === totalQuestions - 1}
-                        >
-                            Next <FaArrowRight className="inline ml-2" />
-                        </button>
+                        {currentQuestionIndex < totalQuestions - 1 ? (
+                            <button
+                                onClick={handleNext}
+                                className={`px-4 py-2 rounded-lg ${currentQuestionIndex < totalQuestions - 1
+                                        ? "bg-[#2148C0] text-white hover:bg-blue-600"
+                                        : "bg-gray-300 text-gray-500"
+                                    }`}
+                            >
+                                Next <FaArrowRight className="inline ml-2" />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleSubmit}
+                                className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600"
+                            >
+                                Submit
+                            </button>
+                        )}
                     </div>
                 </main>
 
                 {isSidebarOpen && (
-                    <aside
-                        // ref={sidebarRef}
-                        className="absolute sm:relative w-full sm:w-64 bg-white shadow-lg p-4 border-l z-30"
-                    >
+                    <aside className="absolute sm:relative w-full sm:w-64 bg-white shadow-lg p-4 border-l z-30">
                         <h3 className="text-lg font-bold mb-4">Questions</h3>
                         <div className="grid grid-cols-8 sm:grid-cols-4 gap-2">
                             {currentSubjectData?.questions.map((_, index) => {
@@ -187,10 +233,10 @@ const ExamPage = () => {
                                     >
                                         <button
                                             onClick={() => setCurrentQuestionIndex(index)}
-                                            className={`w-12 h-12 flex items-center justify-center rounded-lg font-bold ${isSelected ? "bg-blue-100" : ""
-                                                } transition-all`}
+                                            className={`w-12 h-12 flex items-center justify-center rounded-lg font-bold ${isSelected ? "text-white bg-blue-500" : "bg-gray-300"
+                                                }`}
                                         >
-                                            <span>{index + 1}</span>
+                                            {index + 1}
                                         </button>
                                     </div>
                                 );
@@ -199,29 +245,6 @@ const ExamPage = () => {
                     </aside>
                 )}
             </div>
-
-            {showConfirmModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
-                        <h2 className="text-lg font-bold mb-4">Confirm Exit</h2>
-                        <p className="text-gray-700 mb-4">Are you sure you want to leave the quiz?</p>
-                        <div className="flex justify-end gap-4">
-                            <button
-                                onClick={cancelExit}
-                                className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmExit}
-                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                            >
-                                Exit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

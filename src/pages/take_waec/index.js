@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FaBook, FaPen, FaClipboard, FaRandom, FaClock, FaCalendarAlt, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { QuizData } from "../../utils/questions";
+// Import your JSON file
+import quizData from "../../utils/questions/index.json";
 
 const TakeWaecQuiz = () => {
     const [selectedSubjects, setSelectedSubjects] = useState([]);
@@ -37,17 +38,13 @@ const TakeWaecQuiz = () => {
     const startQuiz = () => {
         if (!mode) return; // Ensure mode is selected before proceeding
 
-        const selectedQuizData = QuizData.filter((subject) =>
+        const selectedQuizData = quizData.filter((subject) =>
             selectedSubjects.includes(subject.id)
         ).map((quiz) => {
             const { id, subject } = quiz;
 
             const numQuestions = filters[id]?.numQuestions || 0;
-            const subjectQuizData = QuizData.filter(
-                (q) => q.id === id && q.examType === "JAMB"
-            );
-
-            const allQuestions = subjectQuizData.flatMap((q) => q.questions || []);
+            const allQuestions = quiz.questions || [];
             const shuffledQuestions = allQuestions.sort(() => Math.random() - 0.5);
             const randomQuestions = shuffledQuestions.slice(0, numQuestions);
 
@@ -62,8 +59,6 @@ const TakeWaecQuiz = () => {
             state: { selectedQuizData, timeLeft, mode },
         });
     };
-
-
 
     return (
         <div>
@@ -96,9 +91,9 @@ const TakeWaecQuiz = () => {
                     <div className="mb-6">
                         <h2 className="text-lg font-semibold text-gray-700 mb-4">Select Subjects</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            {QuizData.map((subject) => (
+                            {quizData.map((subject, index) => (
                                 <label
-                                    key={subject.id}
+                                    key={index}
                                     className="flex items-center gap-2 cursor-pointer"
                                 >
                                     <input
@@ -119,7 +114,7 @@ const TakeWaecQuiz = () => {
                             Filters (for each subject)
                         </h2>
                         {selectedSubjects.map((subjectId) => {
-                            const subjectQuizData = QuizData.filter(
+                            const subjectQuizData = quizData.filter(
                                 (quiz) => quiz.id === subjectId && quiz.examType === "WAEC"
                             );
 

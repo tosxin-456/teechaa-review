@@ -1,0 +1,684 @@
+[
+  {
+    "examType": "JAMB",
+    "subject": "Biology",
+    "year": 2010,
+    "id": 1,
+    "questions": [
+      {
+        "question": "The flippers of a whale and the fins of a fish are examples of",
+        "options": [
+          "divergent evolution",
+          "coevolution",
+          "continuous variation",
+          "convergent evolution"
+        ],
+        "correctOption": 3,
+        "explanation": "Illustrates evolutionary concepts of homologous and analogous structures."
+      },
+      {
+        "question": "The main distinguishing features between the soldier termite and other members of the caste are the",
+        "options": [
+          "presence of wings, possession of a small head and large thorax",
+          "presence of wings, possession of a large thorax and a small head",
+          "absence of wings, possession of strong mandibles and a large head",
+          "absence of wings, possession of big head and the absence of mandible"
+        ],
+        "correctOption": 2,
+        "explanation": "Examines structural differences in termite castes."
+      },
+      {
+        "question": "At what stage in the life history of a mammal is the sex of an individual set?",
+        "options": [
+          "at adolescence",
+          "at puberty",
+          "at birth",
+          "at conception"
+        ],
+        "correctOption": 3,
+        "explanation": "Tests knowledge of mammalian sex determination stages."
+      },
+      {
+        "question": "If both parents are heterozygous for a trait, the probability that an offspring will be recessive for that trait is",
+        "options": ["45355", "45293", "45295", "1"],
+        "correctOption": 2,
+        "explanation": "Explores probability calculations in Mendelian inheritance."
+      },
+      {
+        "question": "The chromosome number of a cell before and after the process of meiosis is conventionally represented as",
+        "options": ["2n → 2n", "n → n", "n → 2n", "2n → n"],
+        "correctOption": 3,
+        "explanation": "Examines basic concepts in cell division and chromosome numbers."
+      },
+      {
+        "question": "A pair of genes that control a trait is referred to as",
+        "options": ["an allele", "recessive", "dominant", "a hybrid"],
+        "correctOption": 0,
+        "explanation": "Tests genetic terminology related to inheritance."
+      },
+      {
+        "question": "Thyroxine and adrenalin are examples of hormones which control",
+        "options": [
+          "blood grouping",
+          "tongue rolling",
+          "behavioral patterns",
+          "color variation"
+        ],
+        "correctOption": 2,
+        "explanation": "Identifies hormonal functions in behavioral patterns."
+      },
+      {
+        "question": "Which of the following is a true feature of plantation II?",
+        "options": [
+          "it has the highest number of trees of about 2m high",
+          "it has highest number of trees",
+          "it has the highest number of tall trees",
+          "the height of all its trees range between 2m and 6m"
+        ],
+        "correctOption": 1,
+        "explanation": "Examines specific characteristics of plantations based on height."
+      },
+      {
+        "question": "In which plantation are all the trees between the height of 2-4m?",
+        "options": ["III", "II", "I", "IV"],
+        "correctOption": 0,
+        "explanation": "Tests understanding of tree distribution based on height classifications."
+      },
+      {
+        "question": "A dilute solution of phenylthiocarbamide tastes bitter to some people and is tasteless to others. This is an example of",
+        "options": [
+          "taste bud variation",
+          "discontinuous variation",
+          "morphological variation",
+          "continuous variation"
+        ],
+        "correctOption": 1,
+        "explanation": "Examines genetic variation in taste perception."
+      },
+      {
+        "question": "The protozoan Plasmodium falciparum is transmitted by",
+        "options": [
+          "female Anopheles mosquitoes",
+          "female Aedes mosquitoes",
+          "female Culex mosquitoes",
+          "female blackfly"
+        ],
+        "correctOption": 0,
+        "explanation": "Tests knowledge on malaria transmission vectors."
+      },
+      {
+        "question": "The loss of soil through erosion can be reduced by",
+        "options": ["watering", "crop rotation", "manuring", "irrigation"],
+        "correctOption": 1,
+        "explanation": "Examines soil conservation techniques."
+      },
+      {
+        "question": "The vector for yellow fever is",
+        "options": [
+          "Aedes mosquito",
+          "Anopheles mosquito",
+          "tsetse fly",
+          "blackfly"
+        ],
+        "correctOption": 0,
+        "explanation": "Identifies the vector responsible for transmitting yellow fever."
+      },
+      {
+        "question": "The average number of individuals of a species per unit area of the habitat is the",
+        "options": [
+          "population density",
+          "population frequency",
+          "population size",
+          "population distribution"
+        ],
+        "correctOption": 0,
+        "explanation": "Tests understanding of population density concepts in ecology."
+      },
+      {
+        "question": "The activity of an organism which affects the survival of another organism in the same habitat constitutes",
+        "options": [
+          "an edaphic factor",
+          "an abiotic factor",
+          "a biotic factor",
+          "a physiographic factor"
+        ],
+        "correctOption": 2,
+        "explanation": "Explores interactions among organisms within a habitat."
+      },
+      {
+        "question": "Low annual rainfall, sparse vegetation, high diurnal temperatures and cold nights are characteristic features of the",
+        "options": [
+          "tropical rainforest",
+          "desert",
+          "montane forest",
+          "guinea savanna"
+        ],
+        "correctOption": 1,
+        "explanation": "Tests knowledge of biomes and their characteristics."
+      },
+      {
+        "question": "Which of the above are ways in which desert animals adapt to extreme heat of the environment?",
+        "options": [
+          "I and IV only",
+          "II and III only",
+          "I and II only",
+          "I, II and III only"
+        ],
+        "correctOption": 3,
+        "explanation": "Explores adaptation strategies in desert animals."
+      },
+      {
+        "question": "The two halves of the pelvic girdle are joined together at the",
+        "options": ["pubic symphysis", "ilium", "pubis", "obturator foramen"],
+        "correctOption": 0,
+        "explanation": "Identifies the structure connecting pelvic bones."
+      },
+      {
+        "question": "Which of the following organisms is mainly found in the marine habitat?",
+        "options": ["Achatina", "Tilapia", "Dog fish", "Tortoise"],
+        "correctOption": 2,
+        "explanation": "Examines knowledge of habitat preferences for various organisms."
+      },
+      {
+        "question": "The blood component that has the greatest affinity for oxygen is the",
+        "options": [
+          "lymphocytes",
+          "leucocytes",
+          "erythrocytes",
+          "thrombocytes"
+        ],
+        "correctOption": 2,
+        "explanation": "Tests knowledge of blood components and oxygen transport."
+      },
+      {
+        "question": "The barrier between maternal and foetal blood is the",
+        "options": ["placenta", "liver", "umbilical cord", "uterine wall"],
+        "correctOption": 0,
+        "explanation": "Tests knowledge of structures involved in fetal development."
+      },
+      {
+        "question": "Mycorrhizae promote plant growth by",
+        "options": [
+          "absorbing inorganic ions from the soil",
+          "protecting it from infection",
+          "helping it to utilize atmospheric nitrogen",
+          "serving as a growth regulator"
+        ],
+        "correctOption": 0,
+        "explanation": "Identifies how mutualistic relationships aid plant growth."
+      },
+      {
+        "question": "A food chain always begins with a",
+        "options": ["consumer", "decomposer", "producer", "primary consumer"],
+        "correctOption": 2,
+        "explanation": "Examines foundational ecological knowledge of food chains."
+      },
+      {
+        "question": "Which of the above structures is correctly matched with the organisms in which it is found?",
+        "options": ["III", "II", "I", "IV"],
+        "correctOption": 3,
+        "explanation": "Matches structures with organisms in which they are found."
+      },
+      {
+        "question": "The part of the human gut that has an acidic content is the",
+        "options": ["stomach", "duodenum", "ileum", "colon"],
+        "correctOption": 0,
+        "explanation": "Tests knowledge of the digestive system, focusing on acidity levels."
+      },
+      {
+        "question": "Chemosynthetic organisms are capable of manufacturing their food from simple inorganic substances through the process of",
+        "options": [
+          "oxidation",
+          "denitrification",
+          "reduction",
+          "phosphorylation"
+        ],
+        "correctOption": 0,
+        "explanation": "Explores the process by which certain organisms produce food."
+      },
+      {
+        "question": "In the male reproductive system of a mammal, sperm is stored in the",
+        "options": [
+          "van deferens",
+          "urethra",
+          "epididymis",
+          "seminiferous tubules"
+        ],
+        "correctOption": 2,
+        "explanation": "Identifies the structure for sperm storage in males."
+      },
+      {
+        "question": "Which of the following stimuli is likely to elicit a nastic response in an organism?",
+        "options": [
+          "Touch",
+          "Light intensity",
+          "Chemical substances",
+          "Gravity"
+        ],
+        "correctOption": 0,
+        "explanation": "Examines response to stimuli in plants."
+      },
+      {
+        "question": "The outer layer of the kidney where the Bowman&#039;s capsules are found is the",
+        "options": ["cortex", "pelvis", "medulla", "pyramid"],
+        "correctOption": 0,
+        "explanation": "Tests knowledge of kidney structure and the location of nephrons."
+      },
+      {
+        "question": "The oily substance that lubricates the mammalian hair to keep it flexible and water repellent is secreted by",
+        "options": [
+          "sweet glands",
+          "sebaceous glands",
+          "fatty cells",
+          "granular layer"
+        ],
+        "correctOption": 1,
+        "explanation": "Examines knowledge of mammalian skin glands."
+      },
+      {
+        "question": "The sheet of muscle that separates the thoracic and the abdominal cavities is the",
+        "options": [
+          "diaphragm",
+          "intercostal muscle",
+          "pleural membrane",
+          "pericardium"
+        ],
+        "correctOption": 0,
+        "explanation": "Identifies the muscle structure separating major body cavities in mammals."
+      },
+      {
+        "question": "Yeast respires anaerobically to convert simple sugar to carbon (IV) oxide and",
+        "options": ["alcohol", "acid", "oxygen", "water"],
+        "correctOption": 0,
+        "explanation": "Examines anaerobic respiration products in yeast."
+      },
+      {
+        "question": "Circulation of blood to all parts of the body except the lungs is through",
+        "options": [
+          "the pulmonary artery",
+          "systemic circulation",
+          "the lymphatic system",
+          "pulmonary circulation"
+        ],
+        "correctOption": 1,
+        "explanation": "Distinguishes between different types of circulation in mammals."
+      },
+      {
+        "question": "The primary structure responsible for pumping blood for circulation through the mammalian circulatory systems is the",
+        "options": ["veins", "right auricle", "arteries", "left ventricle"],
+        "correctOption": 3,
+        "explanation": "Identifies structures in the mammalian circulatory system."
+      },
+      {
+        "question": "When the mixture of a food substance and Benedict solution was warmed, the solution changed from blue to black-red. This indicates the presence of",
+        "options": ["reducing sugar", "fatty acid", "sucrose", "amino acid"],
+        "correctOption": 0,
+        "explanation": "Tests knowledge on biochemical food tests for reducing sugars."
+      },
+      {
+        "question": "The mode of nutrition of sun dew and bladder wort can be described as",
+        "options": ["autotrophic", "saprophytic", "holozoic", "chemosynthetic"],
+        "correctOption": 2,
+        "explanation": "Describes the unique nutrition mode of carnivorous plants."
+      },
+      {
+        "question": "Which of the following is lacking in the diet of a person with kwashiorkor?",
+        "options": ["vitamins", "proteins", "carbohydrates", "minerals"],
+        "correctOption": 1,
+        "explanation": "Examines dietary requirements and consequences of deficiency."
+      },
+      {
+        "question": "During photosynthesis, the arrow labelled II represents the",
+        "options": [
+          "escape of mineral salts",
+          "absorption of energy from the sun",
+          "release of carbon (IV) oxide",
+          "release of oxygen as a by-product"
+        ],
+        "correctOption": 3,
+        "explanation": "Tests knowledge on the process and by-products of photosynthesis."
+      },
+      {
+        "question": "The movement of material in the xylem and phloem tissues of the plant are represented by the arrows labelled",
+        "options": [
+          "III and IV respectively",
+          "II and I respectively",
+          "I and II respectively",
+          "I and III respectively"
+        ],
+        "correctOption": 0,
+        "explanation": "Identifies transport systems in plant vascular tissues."
+      },
+      {
+        "question": "Which of the following is true of the transverse section of a dicot system?",
+        "options": [
+          "the epidermis is completely encircled by the cortex",
+          "the xylem is more interiorly located than the phloem",
+          "the cambium lies between the cortex and the vascular bundles",
+          "the vascular bundles are randomly scattered within the cortex"
+        ],
+        "correctOption": 1,
+        "explanation": "Tests knowledge of plant anatomy and structure."
+      },
+      {
+        "question": "Based on the shape and structure of the beak and feet, the bird represented is likely to feed mainly on",
+        "options": ["flesh", "fruits", "seeds", "nectar"],
+        "correctOption": 0,
+        "explanation": "Determines avian diet based on beak and feet structure."
+      },
+      {
+        "question": "The main function of the feathers covering the part labelled I is to",
+        "options": [
+          "prevent ectoparasites from attacking the animal",
+          "generate heat to keep the animal warm",
+          "provide some power for flight",
+          "serve as insulator to maintain body heat"
+        ],
+        "correctOption": 3,
+        "explanation": "Describes feather functions in avian body insulation and protection."
+      },
+      {
+        "question": "Which of the following groups of cells is devoid of true nuclei?",
+        "options": ["algae", "monera", "fungi", "viruses"],
+        "correctOption": 1,
+        "explanation": "Examines knowledge of prokaryotic and eukaryotic cells."
+      },
+      {
+        "question": "Which of the animals represents the oldest creatures in terms of evolutionary history?",
+        "options": ["III", "II", "I", "IV"],
+        "correctOption": 2,
+        "explanation": "Identifies the animal group with ancient evolutionary origins."
+      },
+      {
+        "question": "With respect to their decreasing dependence on aquatic conditions for reproduction, which of the following is the correct arrangement of the animals represented?",
+        "options": [
+          "l, IV, II, and III",
+          "IV, III, II, and I",
+          "I, II, IV, and III",
+          "III, II, IV, and I"
+        ],
+        "correctOption": 0,
+        "explanation": "Tests understanding of evolutionary adaptation to terrestrial life."
+      },
+      {
+        "question": "Parental care is exhibited by",
+        "options": ["toads", "snails", "earthworms", "birds"],
+        "correctOption": 3,
+        "explanation": "Identifies species known for nurturing their offspring."
+      },
+      {
+        "question": "The dominant phase in the life cycle of a fern is the?",
+        "options": ["gametophyte", "prothallus", "sporophyte", "antheridium"],
+        "correctOption": 2,
+        "explanation": "Explores knowledge on the life cycle stages of ferns."
+      },
+      {
+        "question": "Which of the following is NOT a function of the nucleus of a cell?",
+        "options": [
+          "it controls the life processes of the cell",
+          "it translates genetic information for the manufacture of proteins",
+          "it stores and carries hereditary information",
+          "it is reservoir of energy for the cell"
+        ],
+        "correctOption": 3,
+        "explanation": "Tests knowledge on cellular organelle functions, focusing on the nucleus."
+      },
+      {
+        "question": "Which of the following characterizes a mature plant cell?",
+        "options": [
+          "the cytoplasm fills up the entire cell space",
+          "the nucleus is pushed to the centre of the cell",
+          "the cell wall is made up of cellulose",
+          "the nucleus is small and irregular in shape"
+        ],
+        "correctOption": 2,
+        "explanation": "Examines the structural characteristics of a mature plant cell."
+      },
+      {
+        "question": "Which Biology Question Paper Type is given to you?",
+        "options": ["Type A", "Type B", "Type C", "Type D"],
+        "correctOption": 3,
+        "explanation": "Identifies different types of test versions assigned to candidates."
+      }
+    ]
+  },
+      {
+        "examType": "JAMB",
+        "subject": "Mathematics",
+        "year": 2010,
+        "id": 2,
+        "questions": [
+            {
+                "question": "$$\\text{Estimate the mode of the frequency distribution given above.}$$",
+                "options": [
+                    "$$15.0g$$",
+                    "$$13.2g$$",
+                    "$$17.5g$$",
+                    "$$16.8g$$"
+                ],
+                "correctOption": 1,
+                "explanation": "$$\\text{The mode is the most frequent value in the data. The result is approximately } 15.0g.$$"
+            },
+            {
+                "question": "$$\\text{Find the number of students who scored at least 50 marks from the data given.}$$",
+                "options": [
+                    "$$10$$",
+                    "$$6$$",
+                    "$$13$$",
+                    "$$14$$"
+                ],
+                "correctOption": 1,
+                "explanation": "$$\\text{Count the students with marks greater than or equal to 50. The answer is } 10.$$"
+            },
+            {
+                "question": "$$\\text{The bar chart above shows the distribution of marks in a class test. How many students took the test?}$$",
+                "options": [
+                    "$$20$$",
+                    "$$15$$",
+                    "$$10$$",
+                    "$$25$$"
+                ],
+                "correctOption": 1,
+                "explanation": "$$\\text{The total number of students is the sum of all the bars in the chart. The answer is } 20.$$"
+            },
+            {
+                "question": "$$\\sin \\theta = \\cos \\theta, \\text{ find } \\theta$$",
+                "options": [
+                    "$$45^\\circ, 225^\\circ$$",
+                    "$$30^\\circ, 150^\\circ$$",
+                    "$$60^\\circ, 240^\\circ$$",
+                    "$$90^\\circ, 270^\\circ$$"
+                ],
+                "correctOption": 1,
+                "explanation": "$$\\text{For } \\sin(\\theta) = \\cos(\\theta), \\text{ this occurs at } \\theta = 45^\\circ \\text{ and } \\theta = 225^\\circ.$$"
+            },
+            {
+                "question": "$$\\text{The angle between latitudes 30^\\circ S and 13^\\circ N is } 43^\\circ.$$",
+                "options": [
+                    "$$43^\\circ$$",
+                    "$$35^\\circ$$",
+                    "$$25^\\circ$$",
+                    "$$50^\\circ$$"
+                ],
+                "correctOption": 2,
+                "explanation": "$$\\text{The angle between the latitudes is calculated as } 30^\\circ + 13^\\circ = 43^\\circ.$$"
+            },
+            {
+                "question": "$$\\text{Find the area of the sector of a circle with radius 3m, if the angle is } 60^\\circ.$$",
+                "options": [
+                    "$$4.0 \\text{m}^2$$",
+                    "$$4.7 \\text{m}^2$$",
+                    "$$5.0 \\text{m}^2$$",
+                    "$$3.5 \\text{m}^2$$"
+                ],
+                "correctOption": 2,
+                "explanation": "$$\\text{The area of the sector is } A = \\frac{\\theta}{360} \\times \\pi r^2. \\text{ For } \\theta = 60^\\circ, A = 4.0 \\text{m}^2.$$"
+            },
+            {
+                "question": "$$\\text{Find the radius of a sphere whose surface area is } 154 \\text{cm}^2.$$",
+                "options": [
+                    "$$3.5 \\text{cm}$$",
+                    "$$7.0 \\text{cm}$$",
+                    "$$2.5 \\text{cm}$$",
+                    "$$5.0 \\text{cm}$$"
+                ],
+                "correctOption": 1,
+                "explanation": "$$\\text{Use the surface area formula for a sphere: } 4\\pi r^2 = 154. \\text{ Solving for } r, \\text{ we find } r = 3.5 \\text{cm.}$$"
+            },
+            {
+                "question": "$$\\text{In a pie chart, the angle of the sector with proportion 7 is calculated. The total is } 360^\\circ.$$",
+                "options": [
+                    "$$140^\\circ$$",
+                    "$$160^\\circ$$",
+                    "$$120^\\circ$$",
+                    "$$100^\\circ$$"
+                ],
+                "correctOption": 3,
+                "explanation": "$$\\text{The total angle for the pie chart is } 360^\\circ. \\text{ For proportion 7, the angle is } 140^\\circ.$$"
+            },
+            {
+                "question": "$$\\text{Solve for } y \\text{ given } y - 7x + 3 = 0$$",
+                "options": [
+                    "$$7x + 3$$",
+                    "$$7x - 3$$",
+                    "$$5x + 3$$",
+                    "$$3x + 5$$"
+                ],
+                "correctOption": 0,
+                "explanation": "$$\\text{Rearrange to solve for } y: y = 7x - 3.$$"
+            },
+            {
+                "question": "$$\\text{Make } x \\text{ the subject of the relation } \\frac{1+ax}{1-ax} = \\frac{p}{q}$$",
+                "options": [
+                    "$$x = \\frac{p(1 - ax)}{q - ax}$$",
+                    "$$x = \\frac{q + ax}{p + ax}$$",
+                    "$$x = \\frac{q - ax}{p - ax}$$",
+                    "$$x = \\frac{p}{q}$$"
+                ],
+                "correctOption": 3,
+                "explanation": "$$\\text{Rearrange the terms and solve for } x. \\text{ The result is } x = \\frac{p(1 - ax)}{q - ax}.$$"
+            },
+            {
+                "question": "$$y^2 - 3y &gt; 18, \\text{ solve for } y$$",
+                "options": [
+                    "$$y &gt; -3 \\text{ or } y &gt; 6$$",
+                    "$$y &lt; 6 \\text{ or } y &gt; 6$$",
+                    "$$y &gt; -3 \\text{ or } y &gt; 6$$",
+                    "$$y &lt; -3 \\text{ or } y &gt; 6$$"
+                ],
+                "correctOption": 2,
+                "explanation": "$$\\text{Rearrange the inequality and solve for } y. The solution is } y &gt; 6 \\text{ or } y &lt; -3.$$"
+            },
+            {
+                "question": "$$\\text{If } x^2 + 9 = x + 1, \\text{ solve for } x$$",
+                "options": [
+                    "$$-1$$",
+                    "$$4$$",
+                    "$$1$$",
+                    "$$3$$"
+                ],
+                "correctOption": 3,
+                "explanation": "$$\\text{Rearrange the terms to form a quadratic equation, then solve for } x. \\text{ The solutions are } x = 4 \\text{ or } x = -1.$$"
+            },
+            {
+                "question": "$$\\text{Simplify } \\frac{1}{p} - \\frac{1}{q} - \\frac{p}{q} - \\frac{q}{p}$$",
+                "options": [
+                    "$$\\frac{1}{pq}$$",
+                    "$$\\frac{1}{p+q}$$",
+                    "$$\\frac{pq}{p+q}$$",
+                    "$$\\frac{1}{p-q}$$"
+                ],
+                "correctOption": 3,
+                "explanation": "$$\\text{Simplify the rational expression by finding a common denominator. The simplified expression is } \\frac{1}{pq}.$$"
+            },
+            {
+                "question": "$$\\frac{x^3 + 7x^2 - x - 7}{-1 + x^2}$$",
+                "options": [
+                    "$$x - 7$$",
+                    "$$x + 7$$",
+                    "$$-x + 7$$",
+                    "$$-x - 7$$"
+                ],
+                "correctOption": 2,
+                "explanation": "$$\\text{Perform polynomial division to simplify the expression. The result is } x - 7.$$"
+            },
+            {
+                "question": "$$f(x+2) = 2x^2 + 7x - 5, \\text{ find } f(-1)$$",
+                "options": [
+                    "$$-10$$",
+                    "$$-8$$",
+                    "$$4$$",
+                    "$$10$$"
+                ],
+                "correctOption": 1,
+                "explanation": "$$\\text{Substitute } x = -1 \\text{ into the function and simplify. The result is } f(-1) = -8.$$"
+            },
+            {
+                "question": "$$\\log_5 (62.5) - \\log_5 (1/2)$$",
+                "options": [
+                    "$$2$$",
+                    "$$3$$",
+                    "$$4$$",
+                    "$$5$$"
+                ],
+                "correctOption": 0,
+                "explanation": "$$\\text{Simplify the logarithmic expression using the properties of logarithms. The result is } 3.$$"
+            },
+            {
+                "question": "$$2 \\log_3 - 4y + \\log = 4, \\text{ find } y$$",
+                "options": [
+                    "$$\\frac{2}{3}$$",
+                    "$$2$$",
+                    "$$\\frac{3}{2}$$",
+                    "$$3$$"
+                ],
+                "correctOption": 2,
+                "explanation": "$$\\text{First, simplify using logarithmic properties. Then solve for } y. \\text{ We get } y = \\frac{2}{3}.$$"
+            },
+            {
+                "question": "$$\\frac{dy}{dx} = -\\left(33/x\\right) - 21\\left(5x - 4\\right) = \\left(3x - B^2\\right)^2$$",
+                "options": [
+                    "$$5$$",
+                    "$$-5$$",
+                    "$$-1$$",
+                    "$$1$$"
+                ],
+                "correctOption": 1,
+                "explanation": "$$\\text{Apply derivative rules, simplifying the terms and solving the equation. The value of the derivative is calculated.}$$"
+            },
+            {
+                "question": "$$\\frac{4x}{(x+2)^2}$$",
+                "options": [
+                    "$$\\frac{2}{x+2}$$",
+                    "$$4$$",
+                    "$$x+2$$",
+                    "$$\\frac{1}{x+2}$$"
+                ],
+                "correctOption": 2,
+                "explanation": "$$\\text{This is a rational expression. Simplify by expanding and solving the equation. The answer simplifies to } 4.$$"
+            },
+            {
+                "question": "$$10y, X5(2y-2) \\times 4(y-1) = 1$$",
+                "options": [
+                    "$$\\frac{3}{4}$$",
+                    "$$\\frac{2}{5}$$",
+                    "$$4$$",
+                    "$$2$$"
+                ],
+                "correctOption": 0,
+                "explanation": "$$\\text{Solve for } y \\text{ by simplifying the equation. We get } y = \\frac{3}{4}.$$"
+            },
+            {
+                "question": "$$9(x - \\frac{1}{2}) = 3x^2, \\text{ find the value of } x$$",
+                "options": [
+                    "$$\\frac{1}{2}$$",
+                    "$$1$$",
+                    "$$2$$",
+                    "$$3$$"
+                ],
+                "correctOption": 1,
+                "explanation": "$$\\text{First, expand and solve the quadratic equation. We find } x = 1 \\text{ or } x = \\frac{1}{2}.$$"
+            }
+        ]
+    }
+]
