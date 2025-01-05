@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import  QuizData  from "../../utils/questions";
+import QuizData from "../../utils/questions";
 import { studentAnswers } from "../../utils/result_data";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const ResultPage = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const sidebarRef = useRef(null);
     const navigate = useNavigate();
+    const { state } = useLocation();
+    const { result } = state || {};
+    console.log(result);
 
     const attemptedSubjects = QuizData.filter((subject) =>
-        Object.keys(studentAnswers[0].answers).includes(subject.subject)
+        Object.keys([result][0].answers).includes(subject.subject)
     );
 
     const [selectedSubject, setSelectedSubject] = useState(attemptedSubjects[0]?.subject);
@@ -27,8 +30,16 @@ const ResultPage = () => {
     const currentQuestion = currentSubjectData.questions[currentQuestionIndex];
     const totalQuestions = currentSubjectData.questions.length;
 
-    const studentAnswerForSubject = studentAnswers[0].answers[selectedSubject] || [];
+    const studentAnswerForSubject = [result][0].answers[selectedSubject] || [];
 
+    // Calculate correct answers
+    const correctAnswersCount = studentAnswerForSubject.filter((answer, index) => {
+        return answer === currentSubjectData.questions[index].correctOption;
+    }).length;
+
+    // Calculate percentage but cap it to 50 as the highest
+    const scorePercentage = Math.min((correctAnswersCount / totalQuestions) * 100, 50);
+    console.log(scorePercentage)
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth < 768) {
@@ -78,8 +89,8 @@ const ResultPage = () => {
                             key={subject.subject}
                             onClick={() => handleSubjectChange(subject.subject)}
                             className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedSubject === subject.name
-                                    ? "bg-[#2148C0] text-white shadow-md"
-                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                ? "bg-[#2148C0] text-white shadow-md"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                                 }`}
                         >
                             {subject.subject}
@@ -124,10 +135,10 @@ const ResultPage = () => {
                                     <div
                                         key={index}
                                         className={`p-4 rounded-lg shadow-md flex items-center justify-between border ${isCorrect
-                                                ? "border-green-500 bg-green-50"
-                                                : isSelected
-                                                    ? "border-red-500 bg-red-50"
-                                                    : "border-gray-300"
+                                            ? "border-green-500 bg-green-50"
+                                            : isSelected
+                                                ? "border-red-500 bg-red-50"
+                                                : "border-gray-300"
                                             }`}
                                     >
                                         <span>
@@ -141,7 +152,18 @@ const ResultPage = () => {
                                 );
                             })}
                         </div>
-                        <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500">
+
+                        {/* Show a warning for unanswered questions */}
+                        {studentAnswerForSubject[currentQuestionIndex] === null ||
+                            studentAnswerForSubject[currentQuestionIndex] === undefined ? (
+                            <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+                                <h4 className="font-semibold text-yellow-700">Unanswered Question</h4>
+                                <p>You did not select an answer for this question.</p>
+                            </div>
+                        ) : null}
+
+                        {/* Always show the explanation */}
+                        <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
                             <h4 className="font-semibold text-[#2148C0]">Explanation:</h4>
                             <p>{currentQuestion.explanation}</p>
                         </div>
@@ -151,8 +173,8 @@ const ResultPage = () => {
                         <button
                             onClick={handleBack}
                             className={`px-4 py-2 rounded-lg ${currentQuestionIndex > 0
-                                    ? "bg-[#2148C0] text-white hover:bg-blue-600"
-                                    : "bg-gray-300 text-gray-500"
+                                ? "bg-[#2148C0] text-white hover:bg-blue-600"
+                                : "bg-gray-300 text-gray-500"
                                 }`}
                             disabled={currentQuestionIndex === 0}
                         >
@@ -161,64 +183,70 @@ const ResultPage = () => {
                         <button
                             onClick={handleNext}
                             className={`px-4 py-2 rounded-lg ${currentQuestionIndex < totalQuestions - 1
-                                    ? "bg-[#2148C0] text-white hover:bg-blue-600"
-                                    : "bg-gray-300 text-gray-500"
+                                ? "bg-[#2148C0] text-white hover:bg-blue-600"
+                                : "bg-gray-300 text-gray-500"
                                 }`}
                             disabled={currentQuestionIndex === totalQuestions - 1}
                         >
                             Next <FaArrowRight className="inline ml-2" />
                         </button>
                     </div>
+
+                    <div className="mt-6">
+                        <h3 className="font-bold text-xl">Your Score: {scorePercentage}%</h3>
+                    </div>
                 </main>
 
-     {isSidebarOpen && (
-    <aside
-        ref={sidebarRef}
-        className="absolute sm:relative w-full sm:w-64 bg-white shadow-lg p-4 border-l z-30"
-    >
-        <h3 className="text-lg font-bold mb-4">Attempted Questions</h3>
-        <div className="grid grid-cols-8 sm:grid-cols-4 gap-2">
-            {currentSubjectData.questions.map((_, index) => {
-                const isCorrect =
-                    studentAnswerForSubject[index] ===
-                    currentSubjectData.questions[index].correctOption;
-                const isAttempted = studentAnswerForSubject[index] !== null;
-                const isSelected = currentQuestionIndex === index; // Track if this question is selected
-
-                return (
-                    <div
-                        key={index}
-                        className={`flex flex-col items-center ${isSelected ? " border-blue-500" : ""}`}
+                {isSidebarOpen && (
+                    <aside
+                        ref={sidebarRef}
+                        className="absolute sm:relative w-full sm:w-64 bg-white shadow-lg p-4 border-l z-30"
                     >
-                        <button
-                            onClick={() => setCurrentQuestionIndex(index)}
-                            className={`w-12 h-12 flex items-center justify-center rounded-lg font-bold ${isCorrect
-                                    ? "bg-green-200 text-green-800"
-                                    : isAttempted
-                                        ? "bg-red-200 text-red-900"
-                                        : "bg-gray-200 text-gray-700"
-                                } ${isSelected ? "bg-blue-100" : ""} transition-all`}
-                        >
-                            <span>{index + 1}</span>
-                            <div className="ml-2">
-                                {isCorrect ? (
-                                    <FaCheckCircle className="text-green-600 text-lg" />
-                                ) : isAttempted ? (
-                                    <FaTimesCircle className="text-red-600 text-lg" />
-                                ) : (
-                                    <p className="text-gray-600">-</p> // Placeholder for unattempted
-                                )}
-                            </div>
-                        </button>
-                    </div>
-                );
-            })}
-        </div>
-    </aside>
-)}
+                        <h3 className="text-lg font-bold mb-4">Attempted Questions</h3>
+                        <div className="grid grid-cols-8 sm:grid-cols-4 gap-2">
+                            {currentSubjectData.questions.map((_, index) => {
+                                const isCorrect =
+                                    studentAnswerForSubject[index] ===
+                                    currentSubjectData.questions[index].correctOption;
+                                const isAttempted = studentAnswerForSubject[index] !== null;
+                                const isSelected = currentQuestionIndex === index;
+
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`flex flex-col items-center ${isSelected ? " border-blue-500" : ""}`}
+                                    >
+                                        <button
+                                            onClick={() => setCurrentQuestionIndex(index)}
+                                            className={`w-12 h-12 flex items-center justify-center rounded-lg font-bold ${isCorrect
+                                                ? "bg-green-200 text-green-800"
+                                                : isAttempted
+                                                    ? "bg-red-200 text-red-900"
+                                                    : "bg-gray-200 text-gray-700"
+                                                } ${isSelected ? "bg-blue-100" : ""} transition-all`}
+                                        >
+                                            <span>{index + 1}</span>
+                                            <div className="ml-2">
+                                                {isCorrect ? (
+                                                    <FaCheckCircle className="text-green-600 text-lg" />
+                                                ) : isAttempted ? (
+                                                    <FaTimesCircle className="text-red-600 text-lg" />
+                                                ) : (
+                                                    <p className="text-gray-600">-</p>
+                                                )}
+                                            </div>
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </aside>
+                )}
             </div>
         </div>
     );
 };
 
 export default ResultPage;
+
+

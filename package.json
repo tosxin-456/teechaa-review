@@ -12,7 +12,9 @@
     "react-router-dom": "^7.0.2",
     "react-scripts": "5.0.1",
     "react-time-picker": "^7.0.0",
-    "recharts": "^2.15.0"
+    "recharts": "^2.15.0",
+    "sonner": "^1.7.1",
+    "toaster": "^0.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

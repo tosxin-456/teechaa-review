@@ -25,6 +25,8 @@ const Dashboard = () => {
         { id: 6, title: "Result Checker", description: "Check your results instantly.", icon: <FaClipboardCheck color="#2148C0" />, path: "/result-checker" },
     ];
 
+    const user = JSON.parse(localStorage.getItem('user'))
+
     return (
         <div className="min-h-screen flex flex-col bg-white shadow-md ">
             {/* Header */}
@@ -47,7 +49,7 @@ const Dashboard = () => {
             <main className="flex-grow container mx-auto px-4 py-4 lg:py-6">
                 {/* Welcome Section */}
                 <div className="text-center mb-4 lg:mb-6">
-                    <h2 className="text-2xl lg:text-3xl font-bold text-[#2148C0] mb-2">Welcome Back, <span className="text-gray-600" >Toppins</span>!</h2>
+                    <h2 className="text-2xl lg:text-3xl font-bold text-[#2148C0] mb-2">Welcome Back, <span className="text-gray-600" >{user?.firstName}</span>!</h2>
                     <p className="text-gray-600">Explore the features below and get started.</p>
                 </div>
 

@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { IoIosAlarm } from "react-icons/io";
 import { useLocation, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/apiConfig";
+import { toast } from "sonner";
 
 const ExamPage = () => {
     const { state } = useLocation();
-    const { selectedQuizData, timeLeft: initialTimeLeft, mode } = state || {};
+    const { selectedQuizData, timeLeft: initialTimeLeft, mode, examType, year } = state || {};
 
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [timeLeft, setTimeLeft] = useState(initialTimeLeft || 300);
@@ -40,6 +42,7 @@ const ExamPage = () => {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
     }, []);
+    
 
     const formatTime = (seconds) => {
         const minutes = Math.floor(seconds / 60);
@@ -84,21 +87,57 @@ const ExamPage = () => {
     const handleOptionSelect = (questionIndex, optionIndex) => {
         setSelectedAnswers((prev) => ({
             ...prev,
-            [questionIndex]: optionIndex,
+            [selectedSubject]: {
+                ...(prev[selectedSubject] || {}),
+                [questionIndex]: optionIndex,
+            },
         }));
     };
 
-    const handleSubmit = () => {
-        const results = currentSubjectData.questions.map((question, index) => ({
-            question: question.question,
-            selectedOption: selectedAnswers[index],
-            correctOption: question.correctOption,
-            isCorrect: selectedAnswers[index] === question.correctOption,
-        }));
 
-        console.log("Exam Results:", results);
-        navigate("/results", { state: { results, selectedSubject } });
+    const handleSubmit = async() => {
+        const transformedAnswers = Object.keys(selectedAnswers).reduce((acc, subject) => {
+            const subjectAnswers = selectedAnswers[subject];
+            const answersArray = Array(totalQuestions).fill(null).map((_, index) => subjectAnswers[index] || null);
+            acc[subject] = answersArray;
+            return acc;
+        }, {});
+        const user = JSON.parse(localStorage.setItem('user'))
+        const result = {
+            user_id: user.user_id,
+            examType,
+            year,
+            answers: transformedAnswers,
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/answer/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    result
+                }), 
+            });
+
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log("Formatted Result:", result);
+                toast.success("Successfully uploaded your result")
+                navigate("/result", { state: { result } });
+            } else {
+                const result = await response.json();
+                console.log("Error response:", result);
+                toast.error(result.message || "Login failed.");
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            toast.error("An error occurred. Please try again.");
+        }
+
     };
+
 
     // Use MathJax to render the questions when the question changes
     useEffect(() => {
@@ -172,7 +211,7 @@ const ExamPage = () => {
                             {currentSubjectData?.questions[currentQuestionIndex]?.options.map((option, index) => (
                                 <div
                                     key={index}
-                                    className={`p-4 rounded-lg shadow-md border border-gray-300 cursor-pointer ${selectedAnswers[currentQuestionIndex] === index
+                                    className={`p-4 rounded-lg shadow-md border border-gray-300 cursor-pointer ${selectedAnswers[selectedSubject]?.[currentQuestionIndex] === index
                                             ? "bg-blue-100 border-blue-500"
                                             : "hover:bg-gray-200"
                                         }`}
@@ -185,7 +224,6 @@ const ExamPage = () => {
                             ))}
                         </div>
                     </div>
-
                     <div className="flex justify-between mt-6">
                         <button
                             onClick={handleBack}

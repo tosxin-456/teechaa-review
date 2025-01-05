@@ -18,7 +18,7 @@ export const results = [
 export const studentAnswers = [
     {
         examType: "JAMB",
-        year: 2024,
+        year: 2010,
         answers: {
             Mathematics: [1, 1,2,2,0,1,2,3,1, 2],
             Physics: [1, 1, 2, 2, 0, 1, 2, 3, 1, 2],

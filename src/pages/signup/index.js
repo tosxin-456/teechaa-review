@@ -3,13 +3,17 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import bg from "../../assets/first_bg.png"; // Use the same background image as in LoginPage
+import { createUser } from "../../utils/api/signUpUtils";
+import { API_BASE_URL } from "../../config/apiConfig";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         email: "",
-        phone: "",
+        phoneNumber: "",
         gender: "",
         password: "",
         confirmPassword: "",
@@ -17,7 +21,8 @@ const SignupPage = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate()
     // Handle input change
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -26,7 +31,7 @@ const SignupPage = () => {
 
     // Handle phone number change
     const handlePhoneChange = (value) => {
-        setFormData({ ...formData, phone: value });
+        setFormData({ ...formData, phoneNumber: value });
     };
 
     // Toggle password visibility
@@ -34,18 +39,50 @@ const SignupPage = () => {
     const toggleConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const { password, confirmPassword } = formData;
 
+        // Check if passwords match
         if (password !== confirmPassword) {
             alert("Passwords do not match!");
             return;
         }
+        console.log(formData)
 
-        console.log("Form submitted", formData);
-        alert("Sign-Up Successful!");
+        try {
+            const { firstName, lastName, email, phoneNumber, password, gender } = formData;
+            const response = await fetch(`${API_BASE_URL}/api/users/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ firstName, lastName, email, phoneNumber, password, gender }), // Use formData here
+            });
+
+            // Check if the response is ok
+            if (response.ok) {
+                const responseData = await response.json();
+                const { user, token } = responseData;
+                toast.success("User registered successfully");
+                console.log("User registered:", user);
+                localStorage.setItem('user', JSON.stringify(user));
+                localStorage.setItem('token', token);
+
+                navigate(`/dashboard`);
+            } else {
+                // If the response is not ok, log the response status and body
+                const result = await response.json();
+                console.log("Error response:", result);
+                toast.error(result.message || "Registration failed.");
+            }
+        } catch (error) {
+            // Catch any unexpected errors
+            console.error("Registration error:", error);
+            toast.error("An unexpected error occurred.");
+        }
     };
+
 
     return (
         <div
@@ -105,7 +142,7 @@ const SignupPage = () => {
                         <div>
                             <PhoneInput
                                 country={"us"}
-                                value={formData.phone}
+                                value={formData.phoneNumber}
                                 onChange={handlePhoneChange}
                                 inputClass="!w-full !mt-1 !p-2 !border !rounded-lg !bg-transparent !text-white !placeholder-white"
                                 containerClass="text-white"

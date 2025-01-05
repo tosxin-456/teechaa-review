@@ -8,6 +8,7 @@ const TakeJambQuiz = () => {
     const [filters, setFilters] = useState({});
     const [mode, setMode] = useState("");
     const [timeLeft, setTimeLeft] = useState(7200); // 2 hours in seconds
+    const [selectedYear, setselectedYear] = useState([]);
 
     const navigate = useNavigate();
 
@@ -32,30 +33,35 @@ const TakeJambQuiz = () => {
     const goBack = () => {
         navigate(-1);
     };
+    // console.log(filters[id]?.year)
 
     const startQuiz = () => {
-        if (!mode) return; // Ensure mode is selected before proceeding
+        if (!mode) return;
 
-        const selectedQuizData = quizData.filter((subject) =>
-            selectedSubjects.includes(subject.id)
-        ).map((quiz) => {
-            const { id, subject } = quiz;
-            const allQuestions = quiz.questions || [];
-            const randomQuestions = mode === "exam"
-                ? allQuestions.sort(() => Math.random() - 0.5).slice(0, Math.min(40, allQuestions.length))
-                : allQuestions;
+        const selectedQuizData = quizData
+            .filter((subject) => selectedSubjects.includes(subject.id))
+            .map((quiz) => {
+                const { id, subject } = quiz;
+                const allQuestions = quiz.questions || [];
+                const randomQuestions = mode === "exam"
+                    ? allQuestions.sort(() => Math.random() - 0.5).slice(0, Math.min(40, allQuestions.length))
+                    : allQuestions;
 
-            return {
-                id,
-                subject,
-                questions: randomQuestions,
-            };
-        });
+                const selectedYear = filters[id]?.year; 
+
+                return {
+                    id,
+                    subject,
+                    questions: randomQuestions,
+                    year: selectedYear, 
+                };
+            });
 
         navigate("/exam", {
-            state: { selectedQuizData, timeLeft, mode },
+            state: { selectedQuizData, timeLeft, mode, examType: "JAMB", year: selectedYear },
         });
     };
+
 
     return (
         <div>
