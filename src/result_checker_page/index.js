@@ -108,7 +108,7 @@ const ResultPage = () => {
                 <main className="flex-1 p-4 sm:p-6 bg-white shadow-lg rounded-lg mx-4 sm:mx-6">
                     <div className="text-center mb-6">
                         <button
-                            onClick={() => navigate(-1)}
+                            onClick={() => navigate('/dashboard')}
                             className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
                         >
                             <FaArrowLeft className="text-xl" />
