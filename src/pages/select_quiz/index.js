@@ -11,13 +11,16 @@ const SelectQuiz = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [userResults, setUserResults] = useState([]);
-    const [userD, setUserD] = useState([]);
-
 
     useEffect(() => {
         const fetchUserResult = async () => {
             const user = JSON.parse(localStorage.getItem('user'));
-            const userId = user.user_id;
+            const userId = user?.user_id;
+
+            if (!userId) {
+                setError("User not logged in.");
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/answer/user/${userId}`, {
@@ -34,20 +37,11 @@ const SelectQuiz = () => {
 
                 const resultData = await response.json();
 
-                // Parse and normalize the answers field
-                const normalizedData = resultData.map(item => {
-                    const parsedAnswers = JSON.parse(item.answers || '{}');
-                    return {
-                        ...item,
-                        normalizedAnswers: Object.entries(parsedAnswers).reduce((acc, [subject, answers]) => {
-                            acc[subject] = answers.map((answer, index) => ({
-                                questionNumber: index + 1,
-                                answer: answer,
-                            }));
-                            return acc;
-                        }, {}),
-                    };
-                });
+                // Normalize the `answers` field
+                const normalizedData = resultData.map(item => ({
+                    ...item,
+                    answers: JSON.parse(item.answers || '{}'), // Keep answers as arrays
+                }));
 
                 console.log('Normalized Data:', normalizedData);
                 setUserResults(normalizedData);
@@ -61,6 +55,9 @@ const SelectQuiz = () => {
     }, []);
 
 
+
+
+
     const handleQuizSelection = (examType) => {
         if (!selectedExam.year) {
             alert("Please select the exam year.");
@@ -71,12 +68,12 @@ const SelectQuiz = () => {
         setError("");
 
         // Fetch the student's answers
-        const results = userResults.filter(
+        const result = userResults.filter(
             (item) => item.examType === examType && item.year === selectedExam.year
         );
 
-        if (results.length === 0) {
-            setError("No results found for the selected exam and year.");
+        if (result.length === 0) {
+            setError("No result found for the selected exam and year.");
             setLoading(false);
             return;
         }
@@ -96,9 +93,9 @@ const SelectQuiz = () => {
         }
 
         setLoading(false);
-
-        // Navigate with results and questions
-        navigate("/result", { state: { results, questions } });
+        console.log(result)
+        // Navigate with result and questions
+        navigate("/result", { state: { result: userResults } });
     };
 
     const uniqueYears = (examType) => {

@@ -13,7 +13,7 @@ const ResultPage = () => {
     console.log(result);
 
     const attemptedSubjects = QuizData.filter((subject) =>
-        Object.keys(result[0].answers).includes(subject.subject)
+        Object.keys([result][0].answers).includes(subject.subject)
     );
 
     const [selectedSubject, setSelectedSubject] = useState(attemptedSubjects[0]?.subject);
@@ -29,7 +29,7 @@ const ResultPage = () => {
     const currentQuestion = currentSubjectData.questions[currentQuestionIndex];
     const totalQuestions = currentSubjectData.questions.length;
 
-    const studentAnswerForSubject = result[0].answers[selectedSubject] || [];
+    const studentAnswerForSubject = [result][0].answers[selectedSubject] || [];
 
     // Calculate correct answers
     const correctAnswersCount = studentAnswerForSubject.filter((answer, index) => {
@@ -38,8 +38,7 @@ const ResultPage = () => {
 
     // Calculate percentage but cap it to 50 as the highest
     const scorePercentage = Math.min((correctAnswersCount / totalQuestions) * 100, 50);
-    console.log(scorePercentage);
-
+    console.log(scorePercentage)
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth < 768) {
@@ -71,12 +70,6 @@ const ResultPage = () => {
     };
 
     const attemptedCount = studentAnswerForSubject.filter((ans) => ans !== null).length;
-
-    useEffect(() => {
-        if (window.MathJax) {
-            window.MathJax.typesetPromise();
-        }
-    }, [currentQuestionIndex, currentSubjectData]);
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-r from-gray-100 to-gray-200">
@@ -130,16 +123,11 @@ const ResultPage = () => {
                     </div>
 
                     <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md">
-                        {/* Render mathematical equations with MathJax */}
                         <h3 className="text-base sm:text-lg font-semibold mb-4">
-                            <span
-                                dangerouslySetInnerHTML={{
-                                    __html: currentQuestion?.question,
-                                }}
-                            />
+                            {currentQuestion.question}
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {currentQuestion?.options.map((option, index) => {
+                            {currentQuestion.options.map((option, index) => {
                                 const isCorrect = currentQuestion.correctOption === index;
                                 const isSelected = studentAnswerForSubject[currentQuestionIndex] === index;
                                 return (
@@ -259,3 +247,5 @@ const ResultPage = () => {
 };
 
 export default ResultPage;
+
+

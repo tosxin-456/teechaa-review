@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import questions from '../../utils/questions/index.json';
 
 const SearchQuestions = () => {
     const navigate = useNavigate();
@@ -11,22 +12,54 @@ const SearchQuestions = () => {
         examType: "",
         query: "",
     });
+    const [results, setResults] = useState([]); // State for storing search results
+
+    // Get unique years, subjects, and exam types from the questions data
+    const uniqueYears = [...new Set(questions.map(q => q.year))].sort((a, b) => b - a); // Sort years in descending order
+    const uniqueSubjects = [...new Set(questions.map(q => q.subject))]; // Extract unique subjects
+    const uniqueExamTypes = [...new Set(questions.map(q => q.examType))]; // Extract unique exam types
 
     const handleChange = (e) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
 
     const handleSearch = () => {
-        alert(`Searching for questions with filters: ${JSON.stringify(filters, null, 2)}`);
+        const filteredQuestions = [];
+
+        questions.forEach((question) => {
+            if (
+                (filters.year ? question.year.toString() === filters.year : true) &&
+                (filters.subject ? question.subject.toLowerCase() === filters.subject.toLowerCase() : true) &&
+                (filters.examType ? question.examType.toLowerCase() === filters.examType.toLowerCase() : true)
+            ) {
+                const matchedQuestions = question.questions.filter((q) =>
+                    q.question.toLowerCase().includes(filters.query.toLowerCase())
+                );
+
+                if (matchedQuestions.length > 0) {
+                    filteredQuestions.push({
+                        ...question,
+                        questions: matchedQuestions, // Include only matching questions
+                    });
+                }
+            }
+        });
+
+        setResults(filteredQuestions); // Store the filtered questions in state
     };
 
     const goBack = () => {
         navigate(-1);
     };
 
+    useEffect(() => {
+        if (window.MathJax) {
+            window.MathJax.typesetPromise(); // Reprocess MathJax content whenever the search results change
+        }
+    }, [results]);
+
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-r from-white to-blue-50">
-
             {/* Main Content */}
             <main className="flex-grow container mx-auto px-6 py-10">
                 {/* Back Button */}
@@ -75,10 +108,11 @@ const SearchQuestions = () => {
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-[#2148C0] focus:border-[#2148C0] shadow-sm"
                             >
                                 <option value="">Select Year</option>
-                                <option value="2024">2024</option>
-                                <option value="2023">2023</option>
-                                <option value="2022">2022</option>
-                                <option value="2021">2021</option>
+                                {uniqueYears.map((year) => (
+                                    <option key={year} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -92,12 +126,11 @@ const SearchQuestions = () => {
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-[#2148C0] focus:border-[#2148C0] shadow-sm"
                             >
                                 <option value="">Select Subject</option>
-                                <option value="Mathematics">Mathematics</option>
-                                <option value="English">English</option>
-                                <option value="Physics">Physics</option>
-                                <option value="Chemistry">Chemistry</option>
-                                <option value="Biology">Biology</option>
-                                <option value="History">History</option>
+                                {uniqueSubjects.map((subject, index) => (
+                                    <option key={index} value={subject}>
+                                        {subject}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -111,9 +144,11 @@ const SearchQuestions = () => {
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-[#2148C0] focus:border-[#2148C0] shadow-sm"
                             >
                                 <option value="">Select Exam Type</option>
-                                <option value="JAMB">JAMB</option>
-                                <option value="WAEC">WAEC</option>
-                                <option value="NECO">NECO</option>
+                                {uniqueExamTypes.map((examType, index) => (
+                                    <option key={index} value={examType}>
+                                        {examType}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -129,6 +164,40 @@ const SearchQuestions = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* Results Section */}
+                {results.length > 0 && (
+                    <div className="mt-10 bg-white p-8 rounded-xl shadow-xl">
+                        <h3 className="text-2xl font-bold text-[#2148C0] mb-6">Search Results</h3>
+                        {results.map((result, index) => (
+                            <div key={index} className="mb-6">
+                                <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                                    {result.subject} ({result.examType}, {result.year})
+                                </h4>
+                                <ul className="list-disc list-inside space-y-3">
+                                    {result.questions.map((q, qIndex) => (
+                                        <li key={qIndex}>
+                                            {/* Display question with MathJax processing */}
+                                            <p
+                                                className="font-medium"
+                                                dangerouslySetInnerHTML={{ __html: q.question }}
+                                            />
+                                            <ol className="list-decimal list-inside mt-2">
+                                                {q.options.map((option, oIndex) => (
+                                                    <li
+                                                        key={oIndex}
+                                                        className="ml-4"
+                                                        dangerouslySetInnerHTML={{ __html: option }}
+                                                    />
+                                                ))}
+                                            </ol>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </main>
 
             {/* Footer */}

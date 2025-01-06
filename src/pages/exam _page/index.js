@@ -135,7 +135,8 @@ const ExamPage = () => {
                 const responseData = await response.json();
                 console.log("API Response:", responseData); // Debugging response
                 toast.success("Successfully uploaded your result");
-                navigate("/result", { state: { result } });
+                const userResult = [result]
+                navigate("/result", { state: { result: userResult } });
             } else {
                 const errorData = await response.json();
                 console.error("Error Response:", errorData); // Debugging error response
