@@ -204,7 +204,7 @@ const ResultPage = () => {
                     </div>
 
                     <div className="mt-6">
-                        <h3 className="font-bold text-xl">Your Score: {scorePercentage}%</h3>
+                        <h3 className="font-bold text-xl">Your Score: {Math.round(scorePercentage)}%</h3>
                     </div>
                 </main>
 

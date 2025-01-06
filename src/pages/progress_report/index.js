@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaSearch, FaArrowLeft, FaSave, FaPrint } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,10 +12,12 @@ import {
     Cell,
     Legend,
 } from "recharts";
+import { toast } from "sonner";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7f50", "#d45087", "#2ca02c"];
 
-const examsData = [
+const examData = [
     { year: 2021, subject: "Mathematics", correct: 30, examType: "WAEC" },
     { year: 2021, subject: "English", correct: 25, examType: "WAEC" },
     { year: 2021, subject: "Physics", correct: 20, examType: "JAMB" },
@@ -31,15 +33,65 @@ const ProgressReport = () => {
     const [selectedYear, setSelectedYear] = useState("All");
     const [selectedSubject, setSelectedSubject] = useState("All");
     const [selectedExamType, setSelectedExamType] = useState("All");
+    const user = JSON.parse(localStorage.getItem('user'))
+    const userId = user.user_id
+    const [progressData, setProgressData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate()
+    useEffect(() => {
+        const fetchUserProgress = async () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const userId = user?.user_id;
 
-    const filteredData = examsData.filter((entry) => {
+            if (!userId) {
+                // setError("User not logged in.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/progress/user/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch user results');
+                }
+
+                const progressiveData = await response.json();
+                setLoading(false)
+                console.log('Normalized Data:', progressiveData);
+                setProgressData(progressiveData);
+            } catch (error) {
+                console.error('Error fetching result data:', error.message);
+                // setError('Failed to fetch user results.');
+            }
+        };
+
+
+        fetchUserProgress();
+    }, []);
+
+    if (loading) {
+        return <div>Loading progress...</div>;
+    }
+
+    if (progressData.length === 0) {
+        return <div>No progress data available for this user.</div>;
+    }
+
+
+
+    const filteredData = progressData.filter((entry) => {
         return (
             (selectedYear === "All" || entry.year === Number(selectedYear)) &&
             (selectedSubject === "All" || entry.subject === selectedSubject) &&
             (selectedExamType === "All" || entry.examType === selectedExamType)
         );
     });
-    const navigate = useNavigate()
 
     const goBack = () => {
         navigate(-1);
@@ -47,7 +99,7 @@ const ProgressReport = () => {
 
 
     const lineChartData = (() => {
-        const allYears = [...new Set(examsData.map((item) => item.year))];
+        const allYears = [...new Set(progressData.map((item) => item.year))];
         const minYear = Math.min(...allYears);
         const maxYear = Math.max(...allYears);
 
@@ -142,7 +194,7 @@ const ProgressReport = () => {
                         onChange={(e) => setSelectedYear(e.target.value)}
                     >
                         <option value="All">All Years</option>
-                        {[...new Set(examsData.map((item) => item.year))].map((year) => (
+                        {[...new Set(progressData.map((item) => item.year))].map((year) => (
                             <option key={year} value={year}>
                                 {year}
                             </option>
@@ -155,7 +207,7 @@ const ProgressReport = () => {
                         onChange={(e) => setSelectedSubject(e.target.value)}
                     >
                         <option value="All">All Subjects</option>
-                        {[...new Set(examsData.map((item) => item.subject))].map((subject) => (
+                        {[...new Set(progressData.map((item) => item.subject))].map((subject) => (
                             <option key={subject} value={subject}>
                                 {subject}
                             </option>
@@ -168,7 +220,7 @@ const ProgressReport = () => {
                         onChange={(e) => setSelectedExamType(e.target.value)}
                     >
                         <option value="All">All Exam Types</option>
-                        {[...new Set(examsData.map((item) => item.examType))].map((examType) => (
+                        {[...new Set(progressData.map((item) => item.examType))].map((examType) => (
                             <option key={examType} value={examType}>
                                 {examType}
                             </option>

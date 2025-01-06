@@ -4,7 +4,7 @@ import { IoIosAlarm } from "react-icons/io";
 import { useLocation, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiConfig";
 import { toast } from "sonner";
-
+import QuizData from "../../utils/questions";
 const ExamPage = () => {
     const { state } = useLocation();
     const { selectedQuizData, timeLeft: initialTimeLeft, mode, examType, year } = state || {};
@@ -94,9 +94,10 @@ const ExamPage = () => {
         }));
     };
 
+    const examsData = []; 
+
 
     const handleSubmit = async () => {
-        // Transforming selected answers into the desired structure
         const transformedAnswers = Object.keys(selectedAnswers).reduce((acc, subject) => {
             const subjectAnswers = selectedAnswers[subject];
             const answersArray = Array(totalQuestions).fill(null).map((_, index) => subjectAnswers[index] || null);
@@ -105,7 +106,7 @@ const ExamPage = () => {
         }, {});
 
         // Fetch user from localStorage
-        const user = JSON.parse(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem("user"));
         if (!user) {
             console.error("User not found in localStorage.");
             toast.error("User not logged in. Please log in and try again.");
@@ -120,7 +121,7 @@ const ExamPage = () => {
             answers: transformedAnswers,
         };
 
-        console.log("Result payload:", result); // Debugging payload
+        console.log("Result payload:", result); 
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/answer/`, {
@@ -128,27 +129,75 @@ const ExamPage = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(result), // Pass the result object directly
+                body: JSON.stringify(result),
             });
 
             if (response.ok) {
                 const responseData = await response.json();
-                console.log("API Response:", responseData); // Debugging response
+                console.log("API Response:", responseData);
                 toast.success("Successfully uploaded your result");
+
+                // Create the examsData array
+                const examsData = Object.keys(transformedAnswers).map((subject) => {
+                    const subjectAnswers = transformedAnswers[subject];
+                    const currentSubjectData = QuizData.find((s) => s.subject === subject);
+                    const totalQuestions = currentSubjectData.questions.length;
+
+                    // Calculate correct answers
+                    const correctAnswersCount = subjectAnswers.filter((answer, index) => {
+                        return answer === currentSubjectData.questions[index].correctOption;
+                    }).length;
+
+                    // Calculate percentage score over 100
+                    const scorePercentage = (correctAnswersCount / totalQuestions) * 100;
+
+                    return {
+                        user_id: result.user_id,
+                        year: result.year,
+                        subject,
+                        examType: result.examType,
+                        correct: Math.round(scorePercentage), // Round percentage to nearest whole number
+                    };
+                });
+
+                console.log("Exams Data:", examsData); // Debugging examsData
+
+                // Post each subject's data to /api/progress/
+                for (const examData of examsData) {
+                    try {
+                        const progressResponse = await fetch(`${API_BASE_URL}/api/progress/`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(examData),
+                        });
+
+                        if (progressResponse.ok) {
+                            console.log(`Progress for ${examData.subject} successfully saved.`);
+                        } else {
+                            const errorData = await progressResponse.json();
+                            console.error(`Error saving progress for ${examData.subject}:`, errorData);
+                            toast.error(`Failed to save progress for ${examData.subject}`);
+                        }
+                    } catch (progressError) {
+                        console.error(`Fetch Error for ${examData.subject}:`, progressError);
+                        toast.error(`An error occurred while saving progress for ${examData.subject}`);
+                    }
+                }
                 const userResult = [result]
+                // Navigate to result page
                 navigate("/result", { state: { result: userResult } });
             } else {
                 const errorData = await response.json();
-                console.error("Error Response:", errorData); // Debugging error response
+                console.error("Error Response:", errorData);
                 toast.error(errorData.message || "An error occurred. Please try again.");
             }
         } catch (error) {
-            console.error("Fetch Error:", error); // Debugging fetch error
+            console.error("Fetch Error:", error);
             toast.error("An error occurred while submitting your result. Please try again.");
         }
     };
-
-
 
     // Use MathJax to render the questions when the question changes
     useEffect(() => {
