@@ -308,6 +308,32 @@ const ProgressReport = () => {
                     </table>
                 </div>
 
+                <div className="mt-6 bg-white p-4 rounded-lg shadow-lg">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">Exam History</h2>
+                    <table className="w-full border-collapse">
+                        <thead>
+                            <tr>
+                                <th className="border-b text-left p-2">Date</th>
+                                <th className="border-b text-left p-2">Subject</th>
+                                <th className="border-b text-left p-2">Score (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {progressData.map((item, index) => (
+                                <tr key={index}>
+                                    <td className="border-b p-2">
+                                        {new Date(item.createdAt).toLocaleDateString()} {/* Formats the date */}
+                                    </td>
+                                    <td className="border-b p-2">{item.subject}</td>
+                                    <td className="border-b p-2">
+                                        {item.correct}%
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
             {/* Footer */}
             <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">
