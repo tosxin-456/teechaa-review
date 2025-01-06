@@ -95,20 +95,32 @@ const ExamPage = () => {
     };
 
 
-    const handleSubmit = async() => {
+    const handleSubmit = async () => {
+        // Transforming selected answers into the desired structure
         const transformedAnswers = Object.keys(selectedAnswers).reduce((acc, subject) => {
             const subjectAnswers = selectedAnswers[subject];
             const answersArray = Array(totalQuestions).fill(null).map((_, index) => subjectAnswers[index] || null);
             acc[subject] = answersArray;
             return acc;
         }, {});
-        const user = JSON.parse(localStorage.setItem('user'))
+
+        // Fetch user from localStorage
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            console.error("User not found in localStorage.");
+            toast.error("User not logged in. Please log in and try again.");
+            return;
+        }
+
         const result = {
             user_id: user.user_id,
-            examType,
-            year,
+            user_answer_id: 1, // Adjust this if dynamic
+            examType,          // Ensure this is defined
+            year: 2010,        // Ensure this is dynamic if necessary
             answers: transformedAnswers,
         };
+
+        console.log("Result payload:", result); // Debugging payload
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/answer/`, {
@@ -116,27 +128,25 @@ const ExamPage = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    result
-                }), 
+                body: JSON.stringify(result), // Pass the result object directly
             });
 
             if (response.ok) {
                 const responseData = await response.json();
-                console.log("Formatted Result:", result);
-                toast.success("Successfully uploaded your result")
+                console.log("API Response:", responseData); // Debugging response
+                toast.success("Successfully uploaded your result");
                 navigate("/result", { state: { result } });
             } else {
-                const result = await response.json();
-                console.log("Error response:", result);
-                toast.error(result.message || "Login failed.");
+                const errorData = await response.json();
+                console.error("Error Response:", errorData); // Debugging error response
+                toast.error(errorData.message || "An error occurred. Please try again.");
             }
         } catch (error) {
-            console.error("Login error:", error);
-            toast.error("An error occurred. Please try again.");
+            console.error("Fetch Error:", error); // Debugging fetch error
+            toast.error("An error occurred while submitting your result. Please try again.");
         }
-
     };
+
 
 
     // Use MathJax to render the questions when the question changes
