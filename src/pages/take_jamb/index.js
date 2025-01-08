@@ -94,9 +94,12 @@ const TakeJambQuiz = () => {
             })
             .filter((quiz) => quiz !== null);
 
-        navigate("/exam", {
-            state: { selectedQuizData, timeLeft, mode, examType: "JAMB" },
-        });
+        // Store the selected questions in localStorage
+        localStorage.setItem("quizData", JSON.stringify(selectedQuizData));
+        localStorage.setItem("timeLeft", timeLeft);
+        localStorage.setItem("mode", mode);
+
+        navigate("/exam");
     };
 
     const uniqueSubjects = Array.from(

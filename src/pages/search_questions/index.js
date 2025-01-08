@@ -1,51 +1,60 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import questions from '../../utils/questions/index.json';
 
 const SearchQuestions = () => {
     const navigate = useNavigate();
     const [filters, setFilters] = useState({
         year: "",
         subject: "",
-        difficulty: "",
         examType: "",
         query: "",
     });
-    const [results, setResults] = useState([]); // State for storing search results
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Get unique years, subjects, and exam types from the questions data
-    const uniqueYears = [...new Set(questions.map(q => q.year))].sort((a, b) => b - a); // Sort years in descending order
-    const uniqueSubjects = [...new Set(questions.map(q => q.subject))]; // Extract unique subjects
-    const uniqueExamTypes = [...new Set(questions.map(q => q.examType))]; // Extract unique exam types
+    // Fetch unique filter values (e.g., years, subjects, exam types)
+    const [filterOptions, setFilterOptions] = useState({
+        years: [],
+        subjects: [],
+        examTypes: [],
+    });
+
+    useEffect(() => {
+        const fetchFilterOptions = async () => {
+            try {
+                const response = await fetch("/questions/filters");
+                if (!response.ok) throw new Error("Failed to fetch filter options");
+                const data = await response.json();
+                setFilterOptions(data);
+            } catch (error) {
+                console.error("Error fetching filter options:", error);
+            }
+        };
+        fetchFilterOptions();
+    }, []);
 
     const handleChange = (e) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
 
-    const handleSearch = () => {
-        const filteredQuestions = [];
+    const handleSearch = async () => {
+        setLoading(true);
+        setError(null);
 
-        questions.forEach((question) => {
-            if (
-                (filters.year ? question.year.toString() === filters.year : true) &&
-                (filters.subject ? question.subject.toLowerCase() === filters.subject.toLowerCase() : true) &&
-                (filters.examType ? question.examType.toLowerCase() === filters.examType.toLowerCase() : true)
-            ) {
-                const matchedQuestions = question.questions.filter((q) =>
-                    q.question.toLowerCase().includes(filters.query.toLowerCase())
-                );
-
-                if (matchedQuestions.length > 0) {
-                    filteredQuestions.push({
-                        ...question,
-                        questions: matchedQuestions, // Include only matching questions
-                    });
-                }
-            }
-        });
-
-        setResults(filteredQuestions); // Store the filtered questions in state
+        const queryString = new URLSearchParams(filters).toString();
+        try {
+            const response = await fetch(`/questions/search?${queryString}`);
+            if (!response.ok) throw new Error("Failed to fetch search results");
+            const data = await response.json();
+            setResults(data);
+        } catch (error) {
+            console.error("Error during search:", error);
+            setError("Failed to fetch search results. Please try again later.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const goBack = () => {
@@ -54,15 +63,13 @@ const SearchQuestions = () => {
 
     useEffect(() => {
         if (window.MathJax) {
-            window.MathJax.typesetPromise(); // Reprocess MathJax content whenever the search results change
+            window.MathJax.typesetPromise();
         }
     }, [results]);
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-r from-white to-blue-50">
-            {/* Main Content */}
             <main className="flex-grow container mx-auto px-6 py-10">
-                {/* Back Button */}
                 <div className="flex items-center mb-6">
                     <button
                         onClick={goBack}
@@ -73,16 +80,13 @@ const SearchQuestions = () => {
                     </button>
                 </div>
 
-                {/* Welcome Section */}
                 <div className="text-center mb-10">
                     <h2 className="text-4xl font-extrabold text-[#2148C0] mb-3">Search Questions</h2>
                     <p className="text-lg text-gray-600">Filter by year, subject, exam type, or search directly using keywords.</p>
                 </div>
 
-                {/* Filters Section */}
                 <div className="bg-white p-8 rounded-xl shadow-xl max-w-4xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                        {/* Search Input */}
                         <div className="md:col-span-2 lg:col-span-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Search by Keywords</label>
                             <div className="relative">
@@ -98,7 +102,6 @@ const SearchQuestions = () => {
                             </div>
                         </div>
 
-                        {/* Year Dropdown */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
                             <select
@@ -108,7 +111,7 @@ const SearchQuestions = () => {
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-[#2148C0] focus:border-[#2148C0] shadow-sm"
                             >
                                 <option value="">Select Year</option>
-                                {uniqueYears.map((year) => (
+                                {filterOptions.years.map((year) => (
                                     <option key={year} value={year}>
                                         {year}
                                     </option>
@@ -116,7 +119,6 @@ const SearchQuestions = () => {
                             </select>
                         </div>
 
-                        {/* Subject Dropdown */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
                             <select
@@ -126,7 +128,7 @@ const SearchQuestions = () => {
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-[#2148C0] focus:border-[#2148C0] shadow-sm"
                             >
                                 <option value="">Select Subject</option>
-                                {uniqueSubjects.map((subject, index) => (
+                                {filterOptions.subjects.map((subject, index) => (
                                     <option key={index} value={subject}>
                                         {subject}
                                     </option>
@@ -134,7 +136,6 @@ const SearchQuestions = () => {
                             </select>
                         </div>
 
-                        {/* Exam Type Dropdown */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Exam Type</label>
                             <select
@@ -144,7 +145,7 @@ const SearchQuestions = () => {
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-[#2148C0] focus:border-[#2148C0] shadow-sm"
                             >
                                 <option value="">Select Exam Type</option>
-                                {uniqueExamTypes.map((examType, index) => (
+                                {filterOptions.examTypes.map((examType, index) => (
                                     <option key={index} value={examType}>
                                         {examType}
                                     </option>
@@ -153,7 +154,6 @@ const SearchQuestions = () => {
                         </div>
                     </div>
 
-                    {/* Search Button */}
                     <div className="text-center">
                         <button
                             onClick={handleSearch}
@@ -165,42 +165,46 @@ const SearchQuestions = () => {
                     </div>
                 </div>
 
-                {/* Results Section */}
+                {loading && <p className="text-center mt-6 text-lg">Loading...</p>}
+
+                {error && <p className="text-center mt-6 text-lg text-red-500">{error}</p>}
+
                 {results.length > 0 && (
                     <div className="mt-10 bg-white p-8 rounded-xl shadow-xl">
                         <h3 className="text-2xl font-bold text-[#2148C0] mb-6">Search Results</h3>
-                        {results.map((result, index) => (
-                            <div key={index} className="mb-6">
+                        {results.map((result) => (
+                            <div key={result.id} className="mb-6">
                                 <h4 className="text-lg font-semibold text-gray-800 mb-3">
                                     {result.subject} ({result.examType}, {result.year})
                                 </h4>
-                                <ul className="list-disc list-inside space-y-3">
-                                    {result.questions.map((q, qIndex) => (
-                                        <li key={qIndex}>
-                                            {/* Display question with MathJax processing */}
-                                            <p
-                                                className="font-medium"
-                                                dangerouslySetInnerHTML={{ __html: q.question }}
-                                            />
-                                            <ol className="list-decimal list-inside mt-2">
-                                                {q.options.map((option, oIndex) => (
-                                                    <li
-                                                        key={oIndex}
-                                                        className="ml-4"
-                                                        dangerouslySetInnerHTML={{ __html: option }}
-                                                    />
-                                                ))}
-                                            </ol>
-                                        </li>
-                                    ))}
+                                <p className="text-gray-600 mb-3">{result.question}</p>
+                                <ul className="list-disc list-inside space-y-2">
+                                    <li>
+                                        <strong>A:</strong> {result.option_a}
+                                    </li>
+                                    <li>
+                                        <strong>B:</strong> {result.option_b}
+                                    </li>
+                                    <li>
+                                        <strong>C:</strong> {result.option_c}
+                                    </li>
+                                    <li>
+                                        <strong>D:</strong> {result.option_d}
+                                    </li>
                                 </ul>
+                                <p className="mt-3 text-sm text-gray-500">
+                                    <strong>Correct Answer:</strong> {result[`option_${result.correctAnswer.toLowerCase()}`]}
+                                </p>
+                                <p className="mt-3 text-sm text-gray-500">
+                                    <strong>Explanation:</strong> {result.explanation}
+                                </p>
                             </div>
                         ))}
                     </div>
                 )}
+
             </main>
 
-            {/* Footer */}
             <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">
                 <p>&copy; {new Date().getFullYear()} TeeChaa CBT Application. All rights reserved.</p>
             </footer>

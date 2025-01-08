@@ -8,7 +8,7 @@ import QuizData from "../../utils/questions";
 const ExamPage = () => {
     const { state } = useLocation();
     const { selectedQuizData, timeLeft: initialTimeLeft, mode, examType, year } = state || {};
-    const [quizData, setQuizData] = useState([]);
+
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [timeLeft, setTimeLeft] = useState(initialTimeLeft || 300);
     const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -55,22 +55,6 @@ const ExamPage = () => {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
     };
-
-    useEffect(() => {
-        if (selectedQuizData) {
-            const transformedData = selectedQuizData.map((subject) => ({
-                subject: subject.subject,
-                questions: subject.questions.map((q) => ({
-                    question: q.question,
-                    options: [q.option_a, q.option_b, q.option_c, q.option_d],
-                    correctOption: parseInt(q.correctAnswer) - 1, // Convert to 0-based index
-                    explanation: q.explanation,
-                })),
-            }));
-            setQuizData(transformedData);
-        }
-    }, [selectedQuizData]);
-
 
     const handleBack = () => {
         if (currentQuestionIndex > 0) {
