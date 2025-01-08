@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignupPage from "./pages/signup";
 import LoginPage from "./pages/login";
 import Dashboard from "./pages/home";
@@ -18,36 +18,37 @@ import TakeWaecQuiz from "./pages/take_waec";
 import ScheuleExam from "./pages/schedule_exam";
 import ExamPage from "./pages/exam _page";
 import Results2Page from "./test";
-
+import { QuizProvider } from "./utils/api/Redux/QuizContext";
 
 function App() {
   return (
-    <div className="font-montserrat" >
-      <Router>
-        <Routes>
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/otp" element={<OTPPage />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/search-questions" element={<SearchQuestions />} />
-          <Route path="/result-checker" element={<SelectQuiz />} />
-          <Route path="/result" element={<ResultPage />} />
-          <Route path="/progress-report" element={<ProgressReport />} />
-          <Route path="/upcoming-tests" element={<UpcomingTests />} />
-          <Route path="/profile" element={<StudentProfilePage />} />
-          <Route path="/take-jamb" element={<TakeJambQuiz />} />
-          <Route path="/take-waec" element={<TakeWaecQuiz />} />
-          <Route path="/schedule-exam" element={<ScheuleExam />} />
-          <Route path="/exam" element={<ExamPage />} />
-          <Route path="/results" element={<Results2Page />} />
-
-        </Routes>
-      </Router>
-    </div>
+    <QuizProvider> {/* Wrapping the app with QuizProvider */}
+      <div className="font-montserrat">
+        <Router>
+          <Routes>
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="*" element={<NotFound />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/otp" element={<OTPPage />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/search-questions" element={<SearchQuestions />} />
+            <Route path="/result-checker" element={<SelectQuiz />} />
+            <Route path="/result" element={<ResultPage />} />
+            <Route path="/progress-report" element={<ProgressReport />} />
+            <Route path="/upcoming-tests" element={<UpcomingTests />} />
+            <Route path="/profile" element={<StudentProfilePage />} />
+            <Route path="/take-jamb" element={<TakeJambQuiz />} />
+            <Route path="/take-waec" element={<TakeWaecQuiz />} />
+            <Route path="/schedule-exam" element={<ScheuleExam />} />
+            <Route path="/exam" element={<ExamPage />} />
+            <Route path="/results" element={<Results2Page />} />
+          </Routes>
+        </Router>
+      </div>
+    </QuizProvider>
   );
 }
 

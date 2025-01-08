@@ -2,13 +2,17 @@ import React, { useEffect, useState } from "react";
 import { FaBook, FaPen, FaClock, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiConfig";
+import { useQuiz } from "../../utils/api/Redux/QuizContext";
 
 const TakeJambQuiz = () => {
-    const [quizData, setQuizData] = useState([]);
+    const [quizData, setLocalQuizData] = useState([]);
     const [selectedSubjects, setSelectedSubjects] = useState([]);
     const [filters, setFilters] = useState({});
     const [mode, setMode] = useState("");
-    const [timeLeft, setTimeLeft] = useState(7200); // 2 hours in seconds
+    const [timeLeft, setTimeLeft] = useState(7200); 
+    const { setQuizData } = useQuiz(); 
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -26,7 +30,7 @@ const TakeJambQuiz = () => {
                 }
 
                 const questions = await response.json();
-                setQuizData(questions);
+                setLocalQuizData(questions); 
             } catch (error) {
                 console.error("Error fetching questions:", error.message);
             }
@@ -34,8 +38,6 @@ const TakeJambQuiz = () => {
 
         fetchQuestions();
     }, []);
-
-    const navigate = useNavigate();
 
     const toggleSubject = (id) => {
         setSelectedSubjects((prev) =>
@@ -58,49 +60,35 @@ const TakeJambQuiz = () => {
     };
 
     const startQuiz = () => {
-        if (!mode) return;
+        if (!mode || selectedSubjects.length === 0) return;
 
-        const selectedQuizData = quizData
-            .filter((quiz) => selectedSubjects.includes(quiz.subject_id))
-            .map((quiz) => {
-                const { subject_id, subject } = quiz;
-                const allQuestions = quizData.filter((q) => q.subject_id === subject_id);
+        const selectedQuizData = selectedSubjects.flatMap((subject_id) => {
+            const allQuestions = quizData.filter((q) => q.subject_id === subject_id);
 
-                if (mode === "exam") {
-                    // Exam mode: Select up to 40 random questions
-                    const randomQuestions = allQuestions
-                        .sort(() => Math.random() - 0.5)
-                        .slice(0, Math.min(40, allQuestions.length));
-                    return {
-                        id: subject_id,
-                        subject,
-                        questions: randomQuestions,
-                    };
-                } else if (mode === "study") {
-                    // Study mode: Select all questions for the selected year
-                    const selectedYear = filters[subject_id]?.year;
-                    const yearFilteredQuestions = selectedYear
-                        ? allQuestions.filter((q) => q.year === parseInt(selectedYear, 10))
-                        : [];
-                    return {
-                        id: subject_id,
-                        subject,
-                        questions: yearFilteredQuestions,
-                        year: selectedYear,
-                    };
-                }
+            if (mode === "exam") {
+                const randomQuestions = allQuestions
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, Math.min(40, allQuestions.length));
+                console.log(`Exam Questions for Subject ${subject_id}:`, randomQuestions);
+                return randomQuestions;
+            } else if (mode === "study") {
+                const selectedYear = filters[subject_id]?.year;
+                const yearFilteredQuestions = selectedYear
+                    ? allQuestions.filter((q) => q.year === parseInt(selectedYear, 10))
+                    : [];
+                console.log(`Study Questions for Subject ${subject_id}:`, yearFilteredQuestions);
+                return yearFilteredQuestions; 
+            }
 
-                return null;
-            })
-            .filter((quiz) => quiz !== null);
+            return [];
+        });
 
-        // Store the selected questions in localStorage
-        localStorage.setItem("quizData", JSON.stringify(selectedQuizData));
-        localStorage.setItem("timeLeft", timeLeft);
-        localStorage.setItem("mode", mode);
-
+        console.log("Final Selected Quiz Data:", selectedQuizData);
+        setQuizData(selectedQuizData);
         navigate("/exam");
     };
+
+
 
     const uniqueSubjects = Array.from(
         new Map(quizData.map((quiz) => [quiz.subject_id, quiz.subject])).entries()
@@ -144,7 +132,7 @@ const TakeJambQuiz = () => {
                         </div>
                     </div>
 
-                    {/* Filters for Each Subject */}
+                    {/* Filters for Study Mode */}
                     {mode === "study" && (
                         <div className="mb-6">
                             <h2 className="text-lg font-semibold text-gray-700 mb-4">
@@ -244,7 +232,9 @@ const TakeJambQuiz = () => {
                                     value={Math.floor((timeLeft % 3600) / 60)}
                                     onChange={(e) => {
                                         const minutes = parseInt(e.target.value, 10) || 0;
-                                        setTimeLeft(Math.floor(timeLeft / 3600) * 3600 + minutes * 60);
+                                        setTimeLeft(
+                                            Math.floor(timeLeft / 3600) * 3600 + minutes * 60
+                                        );
                                     }}
                                     className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
                                 />
@@ -257,7 +247,9 @@ const TakeJambQuiz = () => {
                         <button
                             onClick={startQuiz}
                             disabled={!mode}
-                            className={`px-6 py-3 rounded-md shadow-lg transition ${mode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                            className={`px-6 py-3 rounded-md shadow-lg transition ${mode
+                                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                : "bg-gray-400 text-gray-200 cursor-not-allowed"
                                 }`}
                         >
                             Start Quiz
