@@ -136,17 +136,21 @@ const ExamPage = () => {
     const [showEntryModal, setShowEntryModal] = useState(true);
     const [currentSubject, setCurrentSubject] = useState(quizData?.[0]?.subject?.toUpperCase() || "");
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [selectedAnswers, setSelectedAnswers] = useState(() => {
-        const initialAnswers = {};
-        quizData.forEach((question) => {
-            const subject = question.subject.toUpperCase();
-            if (!initialAnswers[subject]) initialAnswers[subject] = {};
-            if (question.selectedOption !== undefined) {
-                initialAnswers[subject][question.index] = question.selectedOption;
+    const [selectedAnswers, setSelectedAnswers] = useState({});
+
+    useEffect(() => {
+        // Populate the selectedAnswers state with pre-filled options from quizData
+        const initialAnswers = quizData.reduce((acc, question) => {
+            if (question.selectedOption !== null) {
+                acc[question.id] = question.selectedOption;
             }
-        });
-        return initialAnswers;
-    });
+            return acc;
+        }, {});
+
+        setSelectedAnswers(initialAnswers);
+    }, [quizData]);
+
+
 
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -427,7 +431,10 @@ const ExamPage = () => {
                                 currentSubjectQuestions[currentQuestionIndex]?.option_d,
                             ]}
                             currentAnswer={selectedAnswers[currentSubject]?.[currentQuestionIndex]}
-                            onOptionSelect={handleOptionSelect}
+                            onOptionSelect={(option) =>
+                                handleOptionSelect(quizData[currentQuestionIndex].id, option)
+                            }
+
                         />
                     ) : (
                         <p className="text-center text-gray-500">No questions available.</p>

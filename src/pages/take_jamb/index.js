@@ -139,49 +139,68 @@ const TakeJambQuiz = () => {
     const continueQuiz = async () => {
         console.log(incompleteTests);
 
-        const testId = incompleteTests[0]?.test_id; 
+        const testId = incompleteTests[0]?.test_id;
         const selectedSubjects = incompleteTests.flatMap((test) =>
             test.answers.map((answer) => answer.question.subject_id)
         );
 
+        // Collect all previously answered question IDs
         const incompleteQuestionIds = new Set(
             incompleteTests.flatMap((test) => test.answers.map((answer) => answer.question.id))
         );
 
+        // Get all remaining questions for the selected subjects
         const selectedQuizData = selectedSubjects.flatMap((subject_id) => {
             const allQuestions = quizData.filter((q) => q.subject_id === subject_id);
 
-            const remainingQuestions = allQuestions.filter((q) => !incompleteQuestionIds.has(q.id));
-
-            return remainingQuestions;
+            // Filter out already answered questions
+            return allQuestions.filter((q) => !incompleteQuestionIds.has(q.id));
         });
 
+        // Include previously answered questions with their selected options
         let totalQuestions = incompleteTests.flatMap((test) =>
             test.answers.map((answer) => ({
                 ...answer.question,
-                selectedOption: answer.selected_option, 
+                selectedOption: answer.selected_option, // Include selectedOption
             }))
         );
 
+        // Calculate the number of remaining questions needed
         const remainingQuestionsToSelect = 40 - totalQuestions.length;
 
+        // Add additional questions if needed
         if (remainingQuestionsToSelect > 0) {
             const additionalQuestions = selectedQuizData
-                .sort(() => Math.random() - 0.5)
-                .slice(0, remainingQuestionsToSelect);
+                .sort(() => Math.random() - 0.5) // Shuffle questions
+                .slice(0, remainingQuestionsToSelect) // Select only needed questions
+                .map((question) => ({
+                    ...question,
+                    selectedOption: null, // New questions have no selectedOption
+                }));
 
             totalQuestions = [...totalQuestions, ...additionalQuestions];
         }
 
         console.log("Final Selected Quiz Data:", totalQuestions);
+
+        // Update quiz data state
         setQuizData(totalQuestions);
 
+        // Navigate to the exam page
         if (testId) {
-            navigate("/exam", { state: { test_id: testId, time_left: timeLeft, mode } });
+            navigate("/exam", {
+                state: {
+                    test_id: testId,
+                    time_left: timeLeft,
+                    mode,
+                    quizData: totalQuestions, // Pass the quiz data with selected options
+                },
+            });
         } else {
             console.error("Test ID is not available");
         }
     };
+
 
 
 
