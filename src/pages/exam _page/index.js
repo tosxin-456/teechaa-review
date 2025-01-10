@@ -120,9 +120,6 @@ const QuestionCard = ({ question, options, currentAnswer, onOptionSelect }) => (
                     <span>
                         {String.fromCharCode(65 + index)}. {option}
                     </span>
-                    {currentAnswer !== undefined && currentAnswer === index && (
-                        <span className="ml-2 text-green-500">Selected</span>
-                    )}
                 </div>
             ))}
         </div>
@@ -134,16 +131,28 @@ const ExamPage = () => {
     const { quizData } = useQuiz();
     const navigate = useNavigate();
     const location = useLocation();
-    const { test_id, time_left, mode } = location.state || {}; 
+    const { test_id, time_left, mode } = location.state || {};
     // console.log(test_id, time_left)
     const [showEntryModal, setShowEntryModal] = useState(true);
     const [currentSubject, setCurrentSubject] = useState(quizData?.[0]?.subject?.toUpperCase() || "");
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [selectedAnswers, setSelectedAnswers] = useState({});
+    const [selectedAnswers, setSelectedAnswers] = useState(() => {
+        const initialAnswers = {};
+        quizData.forEach((question) => {
+            const subject = question.subject.toUpperCase();
+            if (!initialAnswers[subject]) initialAnswers[subject] = {};
+            if (question.selectedOption !== undefined) {
+                initialAnswers[subject][question.index] = question.selectedOption;
+            }
+        });
+        return initialAnswers;
+    });
+
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const user = JSON.parse(localStorage.getItem("user"));
     const user_id = user?.user_id;
+
     // const test = JSON.parse(localStorage.getItem("test_id"));
     const handleContinue = () => {
         setShowEntryModal(false);
@@ -161,7 +170,7 @@ const ExamPage = () => {
 
     const currentSubjectQuestions = groupedQuestions[currentSubject] || [];
     const totalQuestions = currentSubjectQuestions.length;
-    
+
     const [timeLeft, setTimeLeft] = useState(() => {
         const savedTime = localStorage.getItem("timeLeft");
         return savedTime ? parseInt(savedTime, 10) : time_left || 7200;
@@ -305,7 +314,7 @@ const ExamPage = () => {
             const answerData = {
                 selected_option: selectedOption,
             };
-
+            console.log(answerData)
             // Check if the selected answer is correct
             const isCorrect = selectedOption === correctAnswer ? 1 : 0; // Use 1 for correct, 0 for incorrecct
             console.log(isCorrect)
