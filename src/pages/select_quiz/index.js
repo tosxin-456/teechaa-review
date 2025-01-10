@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaGraduationCap, FaUniversity, FaArrowLeft } from "react-icons/fa";
-import { examHistory, studentAnswers } from "../../utils/result_data";
-import QuizData from "../../utils/questions";
 import { API_BASE_URL } from "../../config/apiConfig";
 
 const SelectQuiz = () => {
@@ -14,7 +12,7 @@ const SelectQuiz = () => {
 
     useEffect(() => {
         const fetchUserResult = async () => {
-            const user = JSON.parse(localStorage.getItem('user'));
+            const user = JSON.parse(localStorage.getItem("user"));
             const userId = user?.user_id;
 
             if (!userId) {
@@ -23,38 +21,27 @@ const SelectQuiz = () => {
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/answer/user/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                const response = await fetch(`${API_BASE_URL}/api/answer/${userId}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to fetch user results');
+                    throw new Error(errorData.message || "Failed to fetch user results");
                 }
 
                 const resultData = await response.json();
-
-                // Normalize the `answers` field
-                const normalizedData = resultData.map(item => ({
-                    ...item,
-                    answers: JSON.parse(item.answers || '{}'), // Keep answers as arrays
-                }));
-
-                console.log('Normalized Data:', normalizedData);
-                setUserResults(normalizedData);
+                console.log("Raw Data:", resultData.data); // Keep data raw for debugging
+                setUserResults(resultData.data); // No normalization
             } catch (error) {
-                console.error('Error fetching result data:', error.message);
-                setError('Failed to fetch user results.');
+                console.error("Error fetching result data:", error.message);
+                setError("Failed to fetch user results.");
             }
         };
 
         fetchUserResult();
     }, []);
-
-
 
 
 
@@ -67,42 +54,31 @@ const SelectQuiz = () => {
         setLoading(true);
         setError("");
 
-        // Fetch the student's answers
-        const result = userResults.filter(
-            (item) => item.examType === examType && item.year === selectedExam.year
+        // Filter results by exam type and year
+        const filteredResults = userResults.filter(
+            (item) => item.question.examType === examType && item.question.year === selectedExam.year
         );
 
-        if (result.length === 0) {
+        if (filteredResults.length === 0) {
             setError("No result found for the selected exam and year.");
             setLoading(false);
             return;
         }
 
-        // Fetch questions matching examType and year
-        const questions = QuizData.find(
-            (item) =>
-                item.examType === examType &&
-                item.year === selectedExam.year &&
-                item.subject === "Mathematics"
-        )?.questions;
-
-        if (!questions) {
-            setError("No questions available for the selected exam type and year.");
-            setLoading(false);
-            return;
-        }
-
         setLoading(false);
-        console.log(result)
-        // Navigate with result and questions
-        navigate("/result", { state: { result: userResults } });
+        console.log("Filtered Results:", filteredResults);
+
+        // Navigate with filtered results
+        navigate("/result", { state: { result: filteredResults } });
     };
+
 
     const uniqueYears = (examType) => {
         return [
-            ...new Set(userResults.filter((item) => item.examType === examType).map((item) => item.year)),
+            ...new Set(userResults.filter((item) => item.question.examType === examType).map((item) => item.question.year)),
         ];
     };
+
 
     const goBack = () => {
         navigate(-1);
@@ -110,7 +86,7 @@ const SelectQuiz = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
-            <div className="flex items-center mt-6 ml-3 bg-gray-100 ">
+            <div className="flex items-center mt-6 ml-3 bg-gray-100">
                 <button
                     onClick={goBack}
                     className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
@@ -119,9 +95,12 @@ const SelectQuiz = () => {
                     Back
                 </button>
             </div>
+
             <main className="flex-grow flex flex-col items-center justify-center bg-gray-100 py-8">
                 {/* Title */}
-                <h1 className="text-3xl text-center font-semibold text-[#2148C0] mb-6 animate__animated animate__fadeIn">Check Your Quiz Result By Selecting The Year</h1>
+                <h1 className="text-3xl text-center font-semibold text-[#2148C0] mb-6 animate__animated animate__fadeIn">
+                    Check Your Quiz Result By Selecting The Year
+                </h1>
 
                 {/* Error Message */}
                 {error && (
@@ -143,8 +122,7 @@ const SelectQuiz = () => {
                                     key={year}
                                     className={`p-4 rounded-lg shadow-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:shadow-xl ${selectedExam.examType === "WAEC" && selectedExam.year === year
                                         ? "bg-[#2148C0] text-white"
-                                        : "bg-white text-[#2148C0]"
-                                        }`}
+                                        : "bg-white text-[#2148C0]"} `}
                                     onClick={() => setSelectedExam({ examType: "WAEC", year })}
                                 >
                                     {year}
@@ -165,8 +143,7 @@ const SelectQuiz = () => {
                                     key={year}
                                     className={`p-4 rounded-lg shadow-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:shadow-xl ${selectedExam.examType === "JAMB" && selectedExam.year === year
                                         ? "bg-[#2148C0] text-white"
-                                        : "bg-white text-[#2148C0]"
-                                        }`}
+                                        : "bg-white text-[#2148C0]"} `}
                                     onClick={() => setSelectedExam({ examType: "JAMB", year })}
                                 >
                                     {year}

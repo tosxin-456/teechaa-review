@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 const SearchQuestions = () => {
     const navigate = useNavigate();
@@ -8,13 +9,12 @@ const SearchQuestions = () => {
         year: "",
         subject: "",
         examType: "",
-        query: "",
+        query: "", 
     });
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Fetch unique filter values (e.g., years, subjects, exam types)
     const [filterOptions, setFilterOptions] = useState({
         years: [],
         subjects: [],
@@ -24,7 +24,7 @@ const SearchQuestions = () => {
     useEffect(() => {
         const fetchFilterOptions = async () => {
             try {
-                const response = await fetch("/questions/filters");
+                const response = await fetch(`${API_BASE_URL}/api/questions/filter`);
                 if (!response.ok) throw new Error("Failed to fetch filter options");
                 const data = await response.json();
                 setFilterOptions(data);
@@ -32,6 +32,7 @@ const SearchQuestions = () => {
                 console.error("Error fetching filter options:", error);
             }
         };
+
         fetchFilterOptions();
     }, []);
 
@@ -43,9 +44,14 @@ const SearchQuestions = () => {
         setLoading(true);
         setError(null);
 
-        const queryString = new URLSearchParams(filters).toString();
         try {
-            const response = await fetch(`/questions/search?${queryString}`);
+            const queryString = new URLSearchParams({
+                year: filters.year,
+                subject: filters.subject,
+                examType: filters.examType,
+            }).toString();
+
+            const response = await fetch(`${API_BASE_URL}/api/questions/search/${filters.query}?${queryString}`);
             if (!response.ok) throw new Error("Failed to fetch search results");
             const data = await response.json();
             setResults(data);
@@ -70,6 +76,7 @@ const SearchQuestions = () => {
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-r from-white to-blue-50">
             <main className="flex-grow container mx-auto px-6 py-10">
+                {/* Header */}
                 <div className="flex items-center mb-6">
                     <button
                         onClick={goBack}
@@ -85,6 +92,7 @@ const SearchQuestions = () => {
                     <p className="text-lg text-gray-600">Filter by year, subject, exam type, or search directly using keywords.</p>
                 </div>
 
+                {/* Filter Form */}
                 <div className="bg-white p-8 rounded-xl shadow-xl max-w-4xl mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                         <div className="md:col-span-2 lg:col-span-4">
@@ -165,8 +173,8 @@ const SearchQuestions = () => {
                     </div>
                 </div>
 
+                {/* Results */}
                 {loading && <p className="text-center mt-6 text-lg">Loading...</p>}
-
                 {error && <p className="text-center mt-6 text-lg text-red-500">{error}</p>}
 
                 {results.length > 0 && (
@@ -202,7 +210,6 @@ const SearchQuestions = () => {
                         ))}
                     </div>
                 )}
-
             </main>
 
             <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">

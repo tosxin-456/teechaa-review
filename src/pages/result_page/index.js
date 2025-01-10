@@ -1,58 +1,25 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import QuizData from "../../utils/questions";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const ResultPage = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const sidebarRef = useRef(null);
+    const [selectedSubject, setSelectedSubject] = useState("All");
     const navigate = useNavigate();
     const { state } = useLocation();
-    const { result } = state || {};
-    console.log(result);
+    const { result } = state || [];
 
-    const attemptedSubjects = QuizData.filter((subject) =>
-        Object.keys(result[0].answers).includes(subject.subject)
-    );
+    const subjects = [...new Set(result.map((r) => r.question.subject))];
+    const filteredResults =
+        selectedSubject === "All"
+            ? result
+            : result.filter((r) => r.question.subject === selectedSubject);
 
-    const [selectedSubject, setSelectedSubject] = useState(attemptedSubjects[0]?.subject);
-
-    const handleSubjectChange = (subject) => {
-        setSelectedSubject(subject);
-        setCurrentQuestionIndex(0);
-    };
-
-    const currentSubjectData = attemptedSubjects.find(
-        (subject) => subject.subject === selectedSubject
-    );
-    const currentQuestion = currentSubjectData.questions[currentQuestionIndex];
-    const totalQuestions = currentSubjectData.questions.length;
-
-    const studentAnswerForSubject = result[0].answers[selectedSubject] || [];
-
-    // Calculate correct answers
-    const correctAnswersCount = studentAnswerForSubject.filter((answer, index) => {
-        return answer === currentSubjectData.questions[index].correctOption;
-    }).length;
-
-    // Calculate percentage but cap it to 50 as the highest
-    const scorePercentage = Math.min((correctAnswersCount / totalQuestions) * 100, 50);
-    console.log(scorePercentage);
-
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setIsSidebarOpen(false);
-            }
-        };
-        handleResize();
-        window.addEventListener("resize", handleResize);
-
-        return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
+    const totalQuestions = filteredResults.length;
+    const currentQuestion = filteredResults[currentQuestionIndex]?.question || {};
+    const selectedOption = filteredResults[currentQuestionIndex]?.selected_option;
+    const isCorrect = filteredResults[currentQuestionIndex]?.is_correct === 1;
 
     const handleNext = () => {
         if (currentQuestionIndex < totalQuestions - 1) {
@@ -70,56 +37,62 @@ const ResultPage = () => {
         setIsSidebarOpen((prev) => !prev);
     };
 
-    const attemptedCount = studentAnswerForSubject.filter((ans) => ans !== null).length;
+    const handleSubjectChange = (subject) => {
+        setSelectedSubject(subject);
+        setCurrentQuestionIndex(0);
+    };
+
+
+    const goBack = () => {
+        navigate(-1);
+    };
 
     useEffect(() => {
         if (window.MathJax) {
             window.MathJax.typesetPromise();
         }
-    }, [currentQuestionIndex, currentSubjectData]);
+    }, [currentQuestionIndex, selectedSubject]);
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-r from-gray-100 to-gray-200">
             <nav className="bg-[#2148C0] shadow-md px-4 py-3 flex items-center justify-between">
                 <h1 className="text-xl sm:text-2xl font-bold text-white">Exam Results</h1>
-                <div className="text-white">
-                    Subjects Taken: <span className="font-semibold">{attemptedSubjects.length}</span>
-                </div>
+                <div className="text-white">Total Questions: {totalQuestions}</div>
             </nav>
 
-            <div className="bg-white shadow py-3 px-4 sm:px-6">
-                <div className="text-base sm:text-lg flex flex-wrap items-center gap-2">
-                    <span className="font-bold text-gray-700">Select Subject: </span>
-                    {attemptedSubjects.map((subject) => (
+            <div className="p-4 sm:p-6 bg-white shadow-md">
+                <div className="flex gap-4 overflow-x-auto">
+                    <button
+                        className={`px-4 py-2 rounded-lg font-semibold ${selectedSubject === "All" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                        onClick={() => handleSubjectChange("All")}
+                    >
+                        All
+                    </button>
+                    {subjects.map((subject, index) => (
                         <button
-                            key={subject.subject}
-                            onClick={() => handleSubjectChange(subject.subject)}
-                            className={`px-4 py-2 rounded-lg font-semibold transition-all ${selectedSubject === subject.name
-                                ? "bg-[#2148C0] text-white shadow-md"
-                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                }`}
+                            key={index}
+                            className={`px-4 py-2 rounded-lg font-semibold ${selectedSubject === subject ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                            onClick={() => handleSubjectChange(subject)}
                         >
-                            {subject.subject}
+                            {subject}
                         </button>
                     ))}
                 </div>
             </div>
-
+            <div className="flex items-center mt-6 ml-3 mb-6 ">
+                <button
+                    onClick={goBack}
+                    className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
+                >
+                    <FaArrowLeft className="text-xl" />
+                    Back
+                </button>
+            </div>
             <div className="flex-grow flex flex-col-reverse sm:flex-row">
                 <main className="flex-1 p-4 sm:p-6 bg-white shadow-lg rounded-lg mx-4 sm:mx-6">
-                    <div className="text-center mb-6">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
-                        >
-                            <FaArrowLeft className="text-xl" />
-                            Back
-                        </button>
-                    </div>
-
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-lg sm:text-xl font-bold text-[#2148C0]">
-                            {selectedSubject} - Question {currentQuestionIndex + 1} / {totalQuestions}
+                            Question {currentQuestionIndex + 1} / {totalQuestions}
                         </h2>
                         <button
                             onClick={toggleSidebar}
@@ -130,33 +103,25 @@ const ResultPage = () => {
                     </div>
 
                     <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md">
-                        {/* Render mathematical equations with MathJax */}
                         <h3 className="text-base sm:text-lg font-semibold mb-4">
-                            <span
-                                dangerouslySetInnerHTML={{
-                                    __html: currentQuestion?.question,
-                                }}
-                            />
+                            {currentQuestion.question}
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {currentQuestion?.options.map((option, index) => {
-                                const isCorrect = currentQuestion.correctOption === index;
-                                const isSelected = studentAnswerForSubject[currentQuestionIndex] === index;
+                            {["A", "B", "C", "D"].map((option, index) => {
+                                const optionValue = currentQuestion[`option_${option.toLowerCase()}`];
+                                const isOptionCorrect = index + 1 === parseInt(currentQuestion.correctAnswer);
+                                const isOptionSelected = selectedOption === option;
+
                                 return (
                                     <div
                                         key={index}
-                                        className={`p-4 rounded-lg shadow-md flex items-center justify-between border ${isCorrect
-                                            ? "border-green-500 bg-green-50"
-                                            : isSelected
-                                                ? "border-red-500 bg-red-50"
-                                                : "border-gray-300"
+                                        className={`p-4 rounded-lg shadow-md flex items-center justify-between border ${isOptionCorrect ? "border-green-500 bg-green-50" :
+                                            isOptionSelected ? "border-red-500 bg-red-50" : "border-gray-300"
                                             }`}
                                     >
-                                        <span>
-                                            {String.fromCharCode(65 + index)}. {option}
-                                        </span>
-                                        {isCorrect && <FaCheckCircle className="text-green-500 text-xl" />}
-                                        {isSelected && !isCorrect && (
+                                        <span>{option}. {optionValue}</span>
+                                        {isOptionCorrect && <FaCheckCircle className="text-green-500 text-xl" />}
+                                        {isOptionSelected && !isOptionCorrect && (
                                             <FaTimesCircle className="text-red-500 text-xl" />
                                         )}
                                     </div>
@@ -164,16 +129,6 @@ const ResultPage = () => {
                             })}
                         </div>
 
-                        {/* Show a warning for unanswered questions */}
-                        {studentAnswerForSubject[currentQuestionIndex] === null ||
-                            studentAnswerForSubject[currentQuestionIndex] === undefined ? (
-                            <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
-                                <h4 className="font-semibold text-yellow-700">Unanswered Question</h4>
-                                <p>You did not select an answer for this question.</p>
-                            </div>
-                        ) : null}
-
-                        {/* Always show the explanation */}
                         <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
                             <h4 className="font-semibold text-[#2148C0]">Explanation:</h4>
                             <p>{currentQuestion.explanation}</p>
@@ -202,25 +157,19 @@ const ResultPage = () => {
                             Next <FaArrowRight className="inline ml-2" />
                         </button>
                     </div>
-
-                    <div className="mt-6">
-                        <h3 className="font-bold text-xl">Your Score: {Math.round(scorePercentage)}%</h3>
-                    </div>
                 </main>
 
                 {isSidebarOpen && (
                     <aside
-                        ref={sidebarRef}
                         className="absolute sm:relative w-full sm:w-64 bg-white shadow-lg p-4 border-l z-30"
                     >
                         <h3 className="text-lg font-bold mb-4">Attempted Questions</h3>
                         <div className="grid grid-cols-8 sm:grid-cols-4 gap-2">
-                            {currentSubjectData.questions.map((_, index) => {
-                                const isCorrect =
-                                    studentAnswerForSubject[index] ===
-                                    currentSubjectData.questions[index].correctOption;
-                                const isAttempted = studentAnswerForSubject[index] !== null;
+                            {result.map((_, index) => {
+                                const isAttempted = result[index]?.selected_option !== "";
                                 const isSelected = currentQuestionIndex === index;
+                                const isCorrectAttempt = result[index]?.is_correct === 1;
+                                const isIncorrectOption = !isCorrectAttempt && isAttempted;
 
                                 return (
                                     <div
@@ -229,23 +178,14 @@ const ResultPage = () => {
                                     >
                                         <button
                                             onClick={() => setCurrentQuestionIndex(index)}
-                                            className={`w-12 h-12 flex items-center justify-center rounded-lg font-bold ${isCorrect
+                                            className={`w-12 h-12 flex items-center justify-center rounded-lg font-bold ${isCorrectAttempt
                                                 ? "bg-green-200 text-green-800"
-                                                : isAttempted
-                                                    ? "bg-red-200 text-red-900"
-                                                    : "bg-gray-200 text-gray-700"
-                                                } ${isSelected ? "bg-blue-100" : ""} transition-all`}
+                                                : isIncorrectOption
+                                                    ? "bg-red-50 border-green-500"
+                                                    : "bg-green-50 text-gray-700"
+                                                } ${isSelected ? "bg-blue-200" : ""} transition-all`}
                                         >
                                             <span>{index + 1}</span>
-                                            <div className="ml-2">
-                                                {isCorrect ? (
-                                                    <FaCheckCircle className="text-green-600 text-lg" />
-                                                ) : isAttempted ? (
-                                                    <FaTimesCircle className="text-red-600 text-lg" />
-                                                ) : (
-                                                    <p className="text-gray-600">-</p>
-                                                )}
-                                            </div>
                                         </button>
                                     </div>
                                 );

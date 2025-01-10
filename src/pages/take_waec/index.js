@@ -11,13 +11,16 @@ const TakeWaecQuiz = () => {
     const [mode, setMode] = useState("");
     const [timeLeft, setTimeLeft] = useState(7200);
     const { setQuizData } = useQuiz();
-
+    const [incompleteTests, setIncompleteTests] = useState([])
+    // const { mode, setmode } = useState();
     const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem("user"));
+    const user_id = user?.user_id;
 
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/questions/WAEC`, {
+                const response = await fetch(`${API_BASE_URL}/api/questions/exam/WAEC`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -39,6 +42,41 @@ const TakeWaecQuiz = () => {
         fetchQuestions();
     }, []);
 
+    useEffect(() => {
+        const fetchSolved = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/tests/continue/${user_id}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Failed to fetch questions");
+                }
+
+                const incomplete = await response.json();
+                // console.log(incomplete);
+
+                const waecTests = incomplete.data.filter(test =>
+                    test.answers.some(answer => answer.question.examType === "WAEC") // Filter by "waec" examType
+                );
+
+                // console.log(waecTests);
+                setIncompleteTests(waecTests);
+                console.log(waecTests)
+            } catch (error) {
+                console.error("Error fetching questions:", error.message);
+            }
+        };
+
+        fetchSolved();
+    }, [user_id]);
+
+
+
     const toggleSubject = (id) => {
         setSelectedSubjects((prev) =>
             prev.includes(id) ? prev.filter((subjectId) => subjectId !== id) : [...prev, id]
@@ -59,11 +97,12 @@ const TakeWaecQuiz = () => {
         navigate(-1);
     };
 
-    const startQuiz = () => {
+    const startQuiz = async () => {
         if (!mode || selectedSubjects.length === 0) return;
 
         const selectedQuizData = selectedSubjects.flatMap((subject_id) => {
             const allQuestions = quizData.filter((q) => q.subject_id === subject_id);
+            createTest();
 
             if (mode === "exam") {
                 const randomQuestions = allQuestions
@@ -76,8 +115,11 @@ const TakeWaecQuiz = () => {
                 const yearFilteredQuestions = selectedYear
                     ? allQuestions.filter((q) => q.year === parseInt(selectedYear, 10))
                     : [];
-                console.log(`Study Questions for Subject ${subject_id}:`, yearFilteredQuestions);
-                return yearFilteredQuestions;
+                const limitedQuestions = yearFilteredQuestions
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, Math.min(40, yearFilteredQuestions.length));
+                console.log(`Study Questions for Subject ${subject_id}:`, limitedQuestions);
+                return limitedQuestions;
             }
 
             return [];
@@ -85,9 +127,91 @@ const TakeWaecQuiz = () => {
 
         console.log("Final Selected Quiz Data:", selectedQuizData);
         setQuizData(selectedQuizData);
-        navigate("/exam");
+
+        const testId = await createTest();
+
+        if (testId) {
+            navigate("/exam", { state: { test_id: testId, time_left: timeLeft, mode } });
+        } else {
+            console.error("Test ID is not available");
+        }
+    };
+    const continueQuiz = async () => {
+        console.log(incompleteTests);
+
+        const testId = incompleteTests[0]?.test_id;
+        const selectedSubjects = incompleteTests.flatMap((test) =>
+            test.answers.map((answer) => answer.question.subject_id)
+        );
+
+        const incompleteQuestionIds = new Set(
+            incompleteTests.flatMap((test) => test.answers.map((answer) => answer.question.id))
+        );
+
+        const selectedQuizData = selectedSubjects.flatMap((subject_id) => {
+            const allQuestions = quizData.filter((q) => q.subject_id === subject_id);
+
+            const remainingQuestions = allQuestions.filter((q) => !incompleteQuestionIds.has(q.id));
+
+            return remainingQuestions;
+        });
+
+        let totalQuestions = incompleteTests.flatMap((test) =>
+            test.answers.map((answer) => ({
+                ...answer.question,
+                selectedOption: answer.selected_option,
+            }))
+        );
+
+        const remainingQuestionsToSelect = 40 - totalQuestions.length;
+
+        if (remainingQuestionsToSelect > 0) {
+            const additionalQuestions = selectedQuizData
+                .sort(() => Math.random() - 0.5)
+                .slice(0, remainingQuestionsToSelect);
+
+            totalQuestions = [...totalQuestions, ...additionalQuestions];
+        }
+
+        console.log("Final Selected Quiz Data:", totalQuestions);
+        setQuizData(totalQuestions);
+
+        if (testId) {
+            navigate("/exam", { state: { test_id: testId, time_left: timeLeft, mode } });
+        } else {
+            console.error("Test ID is not available");
+        }
     };
 
+
+
+
+    // console.log(mode)
+
+
+    const createTest = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/tests/${user_id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ user_id })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to create test");
+            }
+
+            const test = await response.json();
+            localStorage.setItem('test_id', test.data.id);
+            return test.data.id;
+        } catch (error) {
+            console.error("Error creating test:", error.message);
+            return null;
+        }
+    };
 
 
     const uniqueSubjects = Array.from(
@@ -246,8 +370,8 @@ const TakeWaecQuiz = () => {
                     <div className="text-center">
                         <button
                             onClick={startQuiz}
-                            disabled={!mode}
-                            className={`px-6 py-3 rounded-md shadow-lg transition ${mode
+                            disabled={!mode || selectedSubjects.length === 0} // Disabled if no subjects are selected
+                            className={`px-6 py-3 rounded-md shadow-lg transition ${mode && selectedSubjects.length > 0
                                 ? "bg-blue-600 hover:bg-blue-700 text-white"
                                 : "bg-gray-400 text-gray-200 cursor-not-allowed"
                                 }`}
@@ -255,6 +379,38 @@ const TakeWaecQuiz = () => {
                             Start Quiz
                         </button>
                     </div>
+
+                    {/* Incomplete Tests Section */}
+                    {incompleteTests.length > 0 && (
+                        <div className="mt-8">
+                            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                                Incomplete Studies
+                            </h2>
+                            <div className="bg-yellow-50 p-4 rounded-lg shadow-md">
+                                <h3 className="font-semibold text-gray-800 mb-2">
+                                    Continue where you left off:
+                                </h3>
+                                <div className="space-y-4">
+                                    {incompleteTests.map((test) => (
+                                        <div key={test.test_id} className="flex items-center justify-between border-b py-2">
+                                            <div>
+                                                <h4 className="text-md font-semibold text-gray-800">{`Study ${test.test_id}`}</h4>
+                                                <span className="text-sm text-gray-600">
+                                                    Subjects: {test.answers.map((answer) => answer.question.subject).join(", ")}
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={() => continueQuiz(test.test_id)}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                            >
+                                                Continue
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
             <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">
@@ -262,6 +418,7 @@ const TakeWaecQuiz = () => {
             </footer>
         </div>
     );
+
 };
 
 export default TakeWaecQuiz;

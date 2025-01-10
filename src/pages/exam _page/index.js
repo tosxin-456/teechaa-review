@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { IoIosAlarm } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuiz } from "../../utils/api/Redux/QuizContext";
 import { API_BASE_URL } from "../../config/apiConfig";
 
@@ -120,24 +120,35 @@ const QuestionCard = ({ question, options, currentAnswer, onOptionSelect }) => (
                     <span>
                         {String.fromCharCode(65 + index)}. {option}
                     </span>
+                    {currentAnswer !== undefined && currentAnswer === index && (
+                        <span className="ml-2 text-green-500">Selected</span>
+                    )}
                 </div>
             ))}
         </div>
     </div>
 );
 
+
 const ExamPage = () => {
     const { quizData } = useQuiz();
     const navigate = useNavigate();
-
+    const location = useLocation();
+    const { test_id, time_left, mode } = location.state || {}; 
+    // console.log(test_id, time_left)
+    const [showEntryModal, setShowEntryModal] = useState(true);
     const [currentSubject, setCurrentSubject] = useState(quizData?.[0]?.subject?.toUpperCase() || "");
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(300);
     const [selectedAnswers, setSelectedAnswers] = useState({});
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const user = JSON.parse(localStorage.getItem("user"));
     const user_id = user?.user_id;
+    // const test = JSON.parse(localStorage.getItem("test_id"));
+    const handleContinue = () => {
+        setShowEntryModal(false);
+    };
+
     const groupedQuestions = React.useMemo(() => {
         return (
             quizData?.reduce((acc, item) => {
@@ -150,19 +161,39 @@ const ExamPage = () => {
 
     const currentSubjectQuestions = groupedQuestions[currentSubject] || [];
     const totalQuestions = currentSubjectQuestions.length;
+    
+    const [timeLeft, setTimeLeft] = useState(() => {
+        const savedTime = localStorage.getItem("timeLeft");
+        return savedTime ? parseInt(savedTime, 10) : time_left || 7200;
+    });
 
-    useEffect(() => {
-        if (timeLeft > 0) {
-            const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-            return () => clearInterval(timer);
-        }
-    }, [timeLeft]);
 
+    // Format the time for display
     const formatTime = (seconds) => {
         const minutes = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${minutes < 10 ? `0${minutes}` : minutes}:${secs < 10 ? `0${secs}` : secs}`;
     };
+
+    // Save timeLeft to localStorage whenever it changes
+    useEffect(() => {
+        if (timeLeft > 0 && mode === "exam") {
+            localStorage.setItem("timeLeft", timeLeft); // Store time in localStorage
+        } else {
+            localStorage.removeItem("timeLeft"); // Remove from localStorage when time reaches 0
+        }
+    }, [timeLeft]);
+
+    // Start countdown when timeLeft is greater than 0
+    useEffect(() => {
+        if (timeLeft <= 0 && mode === "exam") return;
+
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer); // Cleanup on component unmount
+    }, [timeLeft]);
 
     const saveAnswerToDatabase = async (selectedOptionIndex) => {
         try {
@@ -175,6 +206,7 @@ const ExamPage = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    test_id,
                     user_id,
                     question_id: questionId,
                     selected_option: selectedOptionIndex,
@@ -200,7 +232,7 @@ const ExamPage = () => {
         }));
         saveAnswerToDatabase(index);
     };
-    
+
     useEffect(() => {
         const fetchSavedAnswers = async () => {
             try {
@@ -216,7 +248,7 @@ const ExamPage = () => {
                 }
 
                 const answers = await response.json();
-                console.log(answers)
+                // console.log(answers)
                 const formattedAnswers = answers.data.reduce((acc, answer) => {
                     const subject = answer.subject.toUpperCase();
                     if (!acc[subject]) acc[subject] = {};
@@ -249,13 +281,12 @@ const ExamPage = () => {
             }
 
             const data = await response.json();
-            return data && data.length > 0; 
+            return data && data.length > 0;
         } catch (error) {
             console.error("Error checking if answer exists:", error.message);
-            return false; 
+            return false;
         }
     };
-
 
     const handleSubmit = () => {
         console.log("Submitting Answers:", selectedAnswers);
@@ -290,6 +321,8 @@ const ExamPage = () => {
                         user_id,
                         question_id: currentQuestionId,
                         is_correct: isCorrect,
+                        test_id,
+                        mode
                     }),
                 });
 
@@ -304,10 +337,10 @@ const ExamPage = () => {
         setCurrentQuestionIndex((prev) => prev + 1);
     };
 
-
-
-
-
+    const handleExit = () => {
+        navigate(-1);  // This will navigate back to the previous page
+        localStorage.removeItem('timeLeft');  // Remove the saved timeLeft from localStorage
+    };
 
 
     return (
@@ -315,7 +348,7 @@ const ExamPage = () => {
             {showConfirmModal && (
                 <ConfirmModal
                     onCancel={() => setShowConfirmModal(false)}
-                    onConfirm={() => navigate(-1)}
+                    onConfirm={handleExit}
                 />
             )}
             <Navbar />
@@ -370,7 +403,9 @@ const ExamPage = () => {
                         <h2 className="text-xl font-bold">
                             {currentSubject} - Question {currentQuestionIndex + 1} / {totalQuestions}
                         </h2>
-                        <Timer timeLeft={formatTime(timeLeft)} />
+                        {mode === "exam" && (
+                            <Timer timeLeft={formatTime(timeLeft)} />
+                        )}
                     </div>
 
                     {totalQuestions > 0 ? (
@@ -420,6 +455,26 @@ const ExamPage = () => {
                         </button>
                     </div>
                 </main>
+
+                {showEntryModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-bold mb-4 text-center">Important Notice</h2>
+                            <p className="text-gray-700 mb-4 text-center">
+                                Please do not refresh the page while taking the exam. Refreshing the page may result in losing your progress.
+                            </p>
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={() => setShowEntryModal(false)}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                >
+                                    I Understand
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
 
                 <Sidebar
                     isOpen={isSidebarOpen}
