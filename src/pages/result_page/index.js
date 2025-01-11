@@ -9,7 +9,7 @@ const ResultPage = () => {
     const navigate = useNavigate();
     const { state } = useLocation();
     const { result } = state || [];
-
+    console.log(result)
     const subjects = [...new Set(result.map((r) => r.question.subject))];
     const filteredResults =
         selectedSubject === "All"
@@ -44,7 +44,7 @@ const ResultPage = () => {
 
 
     const goBack = () => {
-        navigate(-1);
+        navigate('/result-checker');
     };
 
     useEffect(() => {
@@ -103,9 +103,12 @@ const ResultPage = () => {
                     </div>
 
                     <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md">
+                        {/* Question */}
                         <h3 className="text-base sm:text-lg font-semibold mb-4">
                             {currentQuestion.question}
                         </h3>
+
+                        {/* Answer Options */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {["A", "B", "C", "D"].map((option, index) => {
                                 const optionValue = currentQuestion[`option_${option.toLowerCase()}`];
@@ -115,8 +118,11 @@ const ResultPage = () => {
                                 return (
                                     <div
                                         key={index}
-                                        className={`p-4 rounded-lg shadow-md flex items-center justify-between border ${isOptionCorrect ? "border-green-500 bg-green-50" :
-                                            isOptionSelected ? "border-red-500 bg-red-50" : "border-gray-300"
+                                        className={`p-4 rounded-lg shadow-md flex items-center justify-between border ${isOptionCorrect
+                                                ? "border-green-500 bg-green-50" // Correct answer
+                                                : isOptionSelected
+                                                    ? "border-red-500 bg-red-50" // Incorrect answer
+                                                    : "border-gray-300" // Neutral
                                             }`}
                                     >
                                         <span>{option}. {optionValue}</span>
@@ -129,11 +135,23 @@ const ResultPage = () => {
                             })}
                         </div>
 
+                        {/* Unanswered Question Notice */}
+                        {selectedOption === undefined || selectedOption === null ? (
+                            <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+                                <h4 className="font-semibold text-yellow-600">
+                                    Question Not Answered
+                                </h4>
+                                <p>Please review this question and its explanation carefully.</p>
+                            </div>
+                        ) : null}
+
+                        {/* Explanation */}
                         <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
                             <h4 className="font-semibold text-[#2148C0]">Explanation:</h4>
                             <p>{currentQuestion.explanation}</p>
                         </div>
                     </div>
+
 
                     <div className="flex justify-between mt-6">
                         <button

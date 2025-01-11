@@ -108,27 +108,34 @@ const QuestionCard = ({ question, options, currentAnswer, onOptionSelect }) => (
             dangerouslySetInnerHTML={{ __html: question }}
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {options.map((option, index) => (
-                <div
-                    key={index}
-                    className={`p-4 rounded-lg shadow-md border border-gray-300 cursor-pointer ${currentAnswer === index
-                        ? "bg-blue-100 border-blue-500"
-                        : "hover:bg-gray-200"
-                        }`}
-                    onClick={() => onOptionSelect(index)}
-                >
-                    <span>
-                        {String.fromCharCode(65 + index)}. {option}
-                    </span>
-                </div>
-            ))}
+            {options.map((option, index) => {
+                const isSelected = currentAnswer === index;
+
+                return (
+                    <div
+                        key={index}
+                        className={`p-4 rounded-lg shadow-md border cursor-pointer ${isSelected
+                            ? "bg-blue-100 border-blue-500"
+                            : "hover:bg-gray-200"
+                            }`}
+                        onClick={() => onOptionSelect(index)}
+                    >
+                        <span>
+                            {String.fromCharCode(65 + index)}. {option}
+                        </span>
+                    </div>
+                );
+            })}
         </div>
     </div>
 );
 
 
+
+
 const ExamPage = () => {
     const { quizData } = useQuiz();
+    const [userResults, setUserResults] = useState([]);
     const navigate = useNavigate();
     const location = useLocation();
     const { test_id, time_left, mode } = location.state || {};
@@ -137,19 +144,24 @@ const ExamPage = () => {
     const [currentSubject, setCurrentSubject] = useState(quizData?.[0]?.subject?.toUpperCase() || "");
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState({});
-
+    const [selectedExam, setSelectedExam] = useState({ examType: "", year: "" });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    
     useEffect(() => {
-        // Populate the selectedAnswers state with pre-filled options from quizData
         const initialAnswers = quizData.reduce((acc, question) => {
-            if (question.selectedOption !== null) {
-                acc[question.id] = question.selectedOption;
+            if (question.selectedOption) {
+                acc[question.id] = question.selectedOption.charCodeAt(0) - 65; // Convert "A" to 0, "B" to 1, etc.
             }
             return acc;
         }, {});
-
         setSelectedAnswers(initialAnswers);
     }, [quizData]);
 
+
+    // console.log(selectedAnswers)
+
+    const letterToIndex = (letter) => letter.charCodeAt(0) - 65; // 'A' -> 0, 'B' -> 1, etc.
 
 
     const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -235,16 +247,21 @@ const ExamPage = () => {
         }
     };
 
-    const handleOptionSelect = (index) => {
+    const handleOptionSelect = async (index) => {
+        const questionId = currentSubjectQuestions[currentQuestionIndex]?.id;
+
+        // Update selectedAnswers state
         setSelectedAnswers((prev) => ({
             ...prev,
-            [currentSubject]: {
-                ...(prev[currentSubject] || {}),
-                [currentQuestionIndex]: index,
-            },
+            [questionId]: index, // Use question ID as the key
         }));
-        saveAnswerToDatabase(index);
+
+        // Save the answer asynchronously
+        await saveAnswerToDatabase(questionId, index);
     };
+
+
+
 
     useEffect(() => {
         const fetchSavedAnswers = async () => {
@@ -279,76 +296,193 @@ const ExamPage = () => {
         fetchSavedAnswers();
     }, []);
 
+    const handleNext = async () => {
+        const currentQuestionId = currentSubjectQuestions[currentQuestionIndex]?.id; // Get current question ID
+        const correctAnswer = currentSubjectQuestions[currentQuestionIndex]?.correctAnswer; // Get correct answer for comparison
+        const selectedOption = selectedAnswers[currentQuestionId]; // Lookup selected answer by question ID
 
-    const checkIfAnswerExists = async (questionId) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/answer/${questionId}?user_id=${user_id}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+        // Debugging Logs
+        console.log("Selected Answers:", selectedAnswers);
+        console.log("Current Question ID:", currentQuestionId);
+        console.log("Selected Option:", selectedOption);
+        console.log("Correct Answer:", correctAnswer);
 
-            if (!response.ok) {
-                throw new Error("Failed to check if answer exists");
+        // Check if question ID and selected option are valid
+        if (currentQuestionId && selectedOption !== undefined) {
+            const isCorrect = selectedOption === correctAnswer ? 1 : 0; // Determine correctness
+            const answerData = {
+                selected_option: selectedOption,
+                is_correct: isCorrect,
+                user_id,
+                question_id: currentQuestionId,
+                test_id,
+                mode,
+            };
+
+            console.log("Answer Data:", answerData);
+
+            try {
+                // Check if the answer already exists
+                const response = await fetch(
+                    `${API_BASE_URL}/api/answer/update/${user_id}/${currentQuestionId}/${test_id}/${mode}`
+                );
+                const data = await response.json();
+
+                if (data.success && data.answerExists) {
+                    // If the answer exists, update it
+                    const updateResponse = await fetch(
+                        `${API_BASE_URL}/api/answer/update/${user_id}/${currentQuestionId}/${test_id}/${mode}`,
+                        {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(answerData),
+                        }
+                    );
+
+                    if (!updateResponse.ok) {
+                        throw new Error("Failed to update answer");
+                    }
+                    console.log("Answer updated successfully");
+                } else {
+                    // If the answer doesn't exist, create a new one
+                    const createResponse = await fetch(`${API_BASE_URL}/api/answer/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(answerData),
+                    });
+
+                    if (!createResponse.ok) {
+                        throw new Error("Failed to save answer");
+                    }
+                    console.log("Answer saved successfully");
+                }
+            } catch (error) {
+                console.error("Error handling answer:", error.message);
             }
+        } else {
+            console.warn("No option selected or invalid question ID.");
+        }
 
-            const data = await response.json();
-            return data && data.length > 0;
-        } catch (error) {
-            console.error("Error checking if answer exists:", error.message);
-            return false;
+        // If it's the last question, handle submission and navigate to results
+        if (currentQuestionIndex === totalQuestions - 1) {
+            handleSubmit();
+        } else {
+            // Otherwise, move to the next question
+            setCurrentQuestionIndex((prev) => (prev < totalQuestions - 1 ? prev + 1 : prev));
         }
     };
 
     const handleSubmit = () => {
-        console.log("Submitting Answers:", selectedAnswers);
+        const formattedAnswers = currentSubjectQuestions.map((question) => {
+            const selectedOption = selectedAnswers[question.id];
+            const isCorrect = selectedOption === question.correctAnswer ? 1 : 0;
+
+            return {
+                user_answer_id: question.id,  // Example: you may need to generate this ID dynamically
+                user_id: user_id,
+                question_id: question.id,
+                test_id: test_id,
+                selected_option: selectedOption,
+                is_correct: isCorrect,
+                mode: mode,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                question: {
+                    id: question.id,
+                    year: question.year,
+                    examType: question.examType,
+                    question: question.question,
+                    image: question.image, // Ensure this is passed correctly if available
+                    subject: question.subject,
+                    explanation: question.explanation,
+                    option_a: question.option_a,
+                    option_b: question.option_b,
+                    option_c: question.option_c,
+                    option_d: question.option_d,
+                    correctAnswer: question.correctAnswer,
+                }
+            };
+        });
+
+        console.log("Submitting Answers:", formattedAnswers);
+
+        // Navigate to the result page with the formatted answers
+        navigate("/result", { state: { result: formattedAnswers } });
+    };
+
+
+    useEffect(() => {
+        const fetchUserResult = async () => {
+            const user = JSON.parse(localStorage.getItem("user"));
+            const userId = user?.user_id;
+
+            if (!userId) {
+                setError("User not logged in.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/answer/${userId}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Failed to fetch user results");
+                }
+
+                const resultData = await response.json();
+                console.log("Raw Data:", resultData.data); // Keep data raw for debugging
+                setUserResults(resultData.data); // No normalization
+            } catch (error) {
+                console.error("Error fetching result data:", error.message);
+                setError("Failed to fetch user results.");
+            }
+        };
+
+        fetchUserResult();
+    }, []);
+
+
+
+    const handleQuizSelection = (examType) => {
+        if (!selectedExam.year) {
+            alert("Please select the exam year.");
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+
+        // Filter results by exam type and year
+        const filteredResults = userResults.filter(
+            (item) => item.question.examType === examType && item.question.year === selectedExam.year
+        );
+
+        if (filteredResults.length === 0) {
+            setError("No result found for the selected exam and year.");
+            setLoading(false);
+            return;
+        }
+
+        setLoading(false);
+        console.log("Filtered Results:", filteredResults);
+
+        // Navigate with filtered results
+        navigate("/result", { state: { result: filteredResults } });
     };
 
     const handleBackNavigation = () => {
         setShowConfirmModal(true);
     };
 
-    const handleNext = async () => {
-        const currentQuestionId = currentSubjectQuestions[currentQuestionIndex]?.id;
-        const correctAnswer = currentSubjectQuestions[currentQuestionIndex]?.correctAnswer;
-        const selectedOption = selectedAnswers[currentSubject]?.[currentQuestionIndex];
 
-        if (currentQuestionId && selectedOption !== undefined) {
-            const answerData = {
-                selected_option: selectedOption,
-            };
-            console.log(answerData)
-            // Check if the selected answer is correct
-            const isCorrect = selectedOption === correctAnswer ? 1 : 0; // Use 1 for correct, 0 for incorrecct
-            console.log(isCorrect)
-            try {
-                // Use POST to save the answer if it doesn't already exist
-                const response = await fetch(`${API_BASE_URL}/api/answer/`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        ...answerData,
-                        user_id,
-                        question_id: currentQuestionId,
-                        is_correct: isCorrect,
-                        test_id,
-                        mode
-                    }),
-                });
 
-                if (!response.ok) {
-                    throw new Error("Failed to save answer");
-                }
-            } catch (error) {
-                console.error("Error saving answer:", error.message);
-            }
-        }
-
-        setCurrentQuestionIndex((prev) => prev + 1);
-    };
 
     const handleExit = () => {
         navigate(-1);  // This will navigate back to the previous page
@@ -423,6 +557,7 @@ const ExamPage = () => {
 
                     {totalQuestions > 0 ? (
                         <QuestionCard
+                            key={currentSubjectQuestions[currentQuestionIndex]?.id}
                             question={currentSubjectQuestions[currentQuestionIndex]?.question}
                             options={[
                                 currentSubjectQuestions[currentQuestionIndex]?.option_a,
@@ -430,11 +565,8 @@ const ExamPage = () => {
                                 currentSubjectQuestions[currentQuestionIndex]?.option_c,
                                 currentSubjectQuestions[currentQuestionIndex]?.option_d,
                             ]}
-                            currentAnswer={selectedAnswers[currentSubject]?.[currentQuestionIndex]}
-                            onOptionSelect={(option) =>
-                                handleOptionSelect(quizData[currentQuestionIndex].id, option)
-                            }
-
+                            currentAnswer={selectedAnswers[currentSubjectQuestions[currentQuestionIndex]?.id] ?? null}
+                            onOptionSelect={handleOptionSelect}
                         />
                     ) : (
                         <p className="text-center text-gray-500">No questions available.</p>
@@ -452,9 +584,7 @@ const ExamPage = () => {
                         </button>
                         <button
                             onClick={
-                                currentQuestionIndex < totalQuestions - 1
-                                    ? handleNext // Call handleNext to move to the next question
-                                    : handleSubmit // Call handleSubmit when at the last question
+                                handleNext
                             }
                             className={`px-4 py-2 rounded-lg ${currentQuestionIndex < totalQuestions - 1
                                 ? "bg-[#2148C0] text-white hover:bg-blue-600"
