@@ -118,11 +118,7 @@ const StudentProfilePage = () => {
 
             // Update the profile image preview
             if (result.profile_image) {
-                setProfileImagePreview(
-                    `data:image/jpeg;base64,${btoa(
-                        String.fromCharCode(...new Uint8Array(result.profile_image.data))
-                    )}`
-                );
+                setProfileImagePreview(result.profile_image);
             }
             closeModal(); // Close modal after success
         } catch (error) {

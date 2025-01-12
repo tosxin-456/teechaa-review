@@ -27,6 +27,12 @@ const Dashboard = () => {
 
     const user = JSON.parse(localStorage.getItem('user'))
 
+    const logout = () => {
+        localStorage.clear();
+        navigate('/');
+    };
+
+
     return (
         <div className="min-h-screen flex flex-col bg-white shadow-md ">
             {/* Header */}
@@ -35,15 +41,25 @@ const Dashboard = () => {
                 <div className="flex items-center space-x-4">
                     <button className="text-[#2148C0] flex items-center">
                         <FaMoon className="mr-2" />
+                        <span className="hidden sm:inline">Dark Mode</span>
                     </button>
-                    <button onClick={() => navigate('/profile')} className="text-[#2148C0] flex items-center hover:underline ">
-                        <FaUser className="mr-2" /> Profile
+                    <button
+                        onClick={() => navigate('/profile')}
+                        className="text-[#2148C0] flex items-center hover:underline"
+                    >
+                        <FaUser className="mr-2" />
+                        <span className="hidden sm:inline">Profile</span>
                     </button>
-                    <button onClick={() => navigate('/login')} className="text-red-500 flex items-center hover:underline">
-                        <FaSignOutAlt className="mr-2" /> Logout
+                    <button
+                        onClick={logout}
+                        className="text-red-500 flex items-center hover:underline"
+                    >
+                        <FaSignOutAlt className="mr-2" />
+                        <span className="hidden sm:inline">Logout</span>
                     </button>
                 </div>
             </header>
+
 
             {/* Main Content */}
             <main className="flex-grow container mx-auto px-4 py-4 lg:py-6">
