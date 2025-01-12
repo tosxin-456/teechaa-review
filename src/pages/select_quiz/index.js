@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaGraduationCap, FaUniversity, FaArrowLeft } from "react-icons/fa";
+import {
+    FaGraduationCap,
+    FaUniversity,
+    FaArrowLeft,
+    FaBookOpen,
+    FaClipboardCheck,
+} from "react-icons/fa";
 import { API_BASE_URL } from "../../config/apiConfig";
 
 const SelectQuiz = () => {
     const navigate = useNavigate();
-    const [selectedExam, setSelectedExam] = useState({ examType: "", year: "" });
+    const [selectedExam, setSelectedExam] = useState({ examType: "", year: "", mode: "", testId: "" });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [userResults, setUserResults] = useState([]);
 
     useEffect(() => {
-        const fetchUserResult = async () => {
+        const fetchUserResults = async () => {
             const user = JSON.parse(localStorage.getItem("user"));
             const userId = user?.user_id;
 
@@ -28,61 +34,75 @@ const SelectQuiz = () => {
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || "Failed to fetch user results");
+                    throw new Error(errorData.message || "Failed to fetch user results.");
                 }
 
                 const resultData = await response.json();
-                console.log("Raw Data:", resultData.data); // Keep data raw for debugging
-                setUserResults(resultData.data); // No normalization
+                setUserResults(resultData.data);
             } catch (error) {
-                console.error("Error fetching result data:", error.message);
+                console.error("Error fetching results:", error.message);
                 setError("Failed to fetch user results.");
             }
         };
 
-        fetchUserResult();
+        fetchUserResults();
     }, []);
 
-
-
-    const handleQuizSelection = (examType) => {
-        if (!selectedExam.year) {
-            alert("Please select the exam year.");
+    const handleQuizSelection = (examType, mode) => {
+        if (!selectedExam.testId) {
+            alert("Please select a test.");
             return;
         }
 
         setLoading(true);
         setError("");
 
-        // Filter results by exam type and year
         const filteredResults = userResults.filter(
-            (item) => item.question.examType === examType && item.question.year === selectedExam.year
+            (item) =>
+                item.question.examType === examType &&
+                item.mode === mode &&
+                item.test_id === selectedExam.testId
         );
 
         if (filteredResults.length === 0) {
-            setError("No result found for the selected exam and year.");
+            setError("No results found for the selected criteria.");
             setLoading(false);
             return;
         }
 
         setLoading(false);
-        console.log("Filtered Results:", filteredResults);
-
-        // Navigate with filtered results
         navigate("/result", { state: { result: filteredResults } });
     };
 
+    const uniqueTests = (examType, mode) => {
+        const filteredResults = userResults.filter(
+            (item) => item.question.examType === examType && item.mode === mode
+        );
 
-    const uniqueYears = (examType) => {
-        return [
-            ...new Set(userResults.filter((item) => item.question.examType === examType).map((item) => item.question.year)),
-        ];
+        return [...new Set(filteredResults.map((item) => item.test_id))];
     };
 
+    const hasExamData = (examType) => {
+        return userResults.some((item) => item.question.examType === examType);
+    };
 
     const goBack = () => {
-        navigate(-1);
+        navigate("/dashboard");
     };
+
+    if (!hasExamData("WAEC") && !hasExamData("JAMB")) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+                <p className="text-red-500 text-lg font-semibold">No such exam available.</p>
+                <button
+                    onClick={goBack}
+                    className="mt-4 px-4 py-2 bg-[#2148C0] text-white rounded-lg hover:bg-blue-600 transition"
+                >
+                    Go Back
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
@@ -97,73 +117,79 @@ const SelectQuiz = () => {
             </div>
 
             <main className="flex-grow flex flex-col items-center justify-center bg-gray-100 py-8">
-                {/* Title */}
-                <h1 className="text-3xl text-center font-semibold text-[#2148C0] mb-6 animate__animated animate__fadeIn">
-                    Check Your Quiz Result By Selecting The Year
+                <h1 className="text-3xl text-center font-semibold text-[#2148C0] mb-6">
+                    Check Your Quiz Result
                 </h1>
 
-                {/* Error Message */}
                 {error && (
-                    <div className="text-red-500 mb-4 animate__animated animate__shakeX">
+                    <div className="text-red-500 mb-4">
                         <p>{error}</p>
                     </div>
                 )}
 
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-                    {/* WAEC Exam Section */}
-                    <div className="flex flex-col items-center p-6 border rounded-lg shadow-lg hover:shadow-2xl hover:bg-blue-50 transition-all duration-300">
-                        <FaGraduationCap className="text-4xl text-[#2148C0] mb-4 transition-transform transform hover:scale-125" />
-                        <h2 className="text-lg font-semibold text-[#2148C0] mb-2">WAEC</h2>
+                    {["WAEC", "JAMB"]
+                        .filter((examType) => hasExamData(examType))
+                        .map((examType) => (
+                            <div
+                                key={examType}
+                                className="flex flex-col items-center p-6 border rounded-lg shadow-lg hover:shadow-2xl hover:bg-blue-50 transition-all duration-300"
+                            >
+                                {examType === "WAEC" ? (
+                                    <FaGraduationCap className="text-4xl text-[#2148C0] mb-4 transition-transform transform hover:scale-125" />
+                                ) : (
+                                    <FaUniversity className="text-4xl text-[#2148C0] mb-4 transition-transform transform hover:scale-125" />
+                                )}
+                                <h2 className="text-lg font-semibold text-[#2148C0] mb-2">{examType}</h2>
 
-                        {/* WAEC Year Containers */}
-                        <div className="grid grid-cols-2 gap-4">
-                            {uniqueYears("WAEC").map((year) => (
-                                <div
-                                    key={year}
-                                    className={`p-4 rounded-lg shadow-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:shadow-xl ${selectedExam.examType === "WAEC" && selectedExam.year === year
-                                        ? "bg-[#2148C0] text-white"
-                                        : "bg-white text-[#2148C0]"} `}
-                                    onClick={() => setSelectedExam({ examType: "WAEC", year })}
-                                >
-                                    {year}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* JAMB Exam Section */}
-                    <div className="flex flex-col items-center p-6 border rounded-lg shadow-lg hover:shadow-2xl hover:bg-blue-50 transition-all duration-300">
-                        <FaUniversity className="text-4xl text-[#2148C0] mb-4 transition-transform transform hover:scale-125" />
-                        <h2 className="text-lg font-semibold text-[#2148C0] mb-2">JAMB</h2>
-
-                        {/* JAMB Year Containers */}
-                        <div className="grid grid-cols-2 gap-4">
-                            {uniqueYears("JAMB").map((year) => (
-                                <div
-                                    key={year}
-                                    className={`p-4 rounded-lg shadow-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:shadow-xl ${selectedExam.examType === "JAMB" && selectedExam.year === year
-                                        ? "bg-[#2148C0] text-white"
-                                        : "bg-white text-[#2148C0]"} `}
-                                    onClick={() => setSelectedExam({ examType: "JAMB", year })}
-                                >
-                                    {year}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                                {["study", "exam"].map((mode) => (
+                                    <div key={mode} className="mb-4 w-full">
+                                        <h3 className="text-md font-semibold text-[#2148C0] mb-2">
+                                            {mode === "study" ? (
+                                                <FaBookOpen className="inline-block mr-2" />
+                                            ) : (
+                                                <FaClipboardCheck className="inline-block mr-2" />
+                                            )}
+                                            {mode.toUpperCase()} Mode
+                                        </h3>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {uniqueTests(examType, mode).map((testId, index) => (
+                                                <div
+                                                    key={testId}
+                                                    className={`p-4 rounded-lg shadow-lg cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:shadow-xl ${selectedExam.examType === examType &&
+                                                        selectedExam.testId === testId &&
+                                                        selectedExam.mode === mode
+                                                        ? "bg-[#2148C0] text-white"
+                                                        : "bg-white text-[#2148C0]"
+                                                        }`}
+                                                    onClick={() =>
+                                                        setSelectedExam({
+                                                            examType,
+                                                            year: "", // No year required
+                                                            mode,
+                                                            testId,
+                                                        })
+                                                    }
+                                                >
+                                                    {mode === "study" ? "Study" : "Exam"} {index + 1}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
                 </div>
 
-                {/* Check Result Button */}
                 <button
-                    onClick={() => handleQuizSelection(selectedExam.examType)}
+                    onClick={() => handleQuizSelection(selectedExam.examType, selectedExam.mode)}
                     className="bg-[#2148C0] text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition mt-6 transform hover:scale-105"
-                    disabled={loading || !selectedExam.year}
+                    disabled={loading || !selectedExam.testId}
                 >
                     {loading ? "Loading..." : "Check Result"}
                 </button>
             </main>
 
-            {/* Footer */}
             <footer className="text-center text-gray-300 py-4 bg-black bg-opacity-40">
                 <p>&copy; {new Date().getFullYear()} TeeChaa CBT Application. All rights reserved.</p>
             </footer>

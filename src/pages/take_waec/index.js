@@ -60,13 +60,13 @@ const TakeWaecQuiz = () => {
                 const incomplete = await response.json();
                 // console.log(incomplete);
 
-                const waecTests = incomplete.data.filter(test =>
-                    test.answers.some(answer => answer.question.examType === "WAEC") // Filter by "waec" examType
+                const jambTests = incomplete.data.filter(test =>
+                    test.answers.some(answer => answer.question.examType === "WAEC") // Filter by "JAMB" examType
                 );
 
-                // console.log(waecTests);
-                setIncompleteTests(waecTests);
-                console.log(waecTests)
+                // console.log(jambTests);
+                setIncompleteTests(jambTests);
+                console.log(jambTests)
             } catch (error) {
                 console.error("Error fetching questions:", error.message);
             }
@@ -136,52 +136,71 @@ const TakeWaecQuiz = () => {
             console.error("Test ID is not available");
         }
     };
+
+
     const continueQuiz = async () => {
-        console.log(incompleteTests);
+        console.log("Incomplete Tests Data:", incompleteTests);
 
         const testId = incompleteTests[0]?.test_id;
+        const mode = incompleteTests[0]?.answers[0]?.mode
+        // console.log(mode)
+        if (!testId) {
+            console.error("Test ID is not available");
+            return;
+        }
+
         const selectedSubjects = incompleteTests.flatMap((test) =>
             test.answers.map((answer) => answer.question.subject_id)
         );
 
+        // Collect already answered question IDs
         const incompleteQuestionIds = new Set(
             incompleteTests.flatMap((test) => test.answers.map((answer) => answer.question.id))
         );
 
-        const selectedQuizData = selectedSubjects.flatMap((subject_id) => {
-            const allQuestions = quizData.filter((q) => q.subject_id === subject_id);
+        // Fetch remaining questions for selected subjects
+        const selectedQuizData = selectedSubjects.flatMap((subject_id) =>
+            quizData.filter((q) => q.subject_id === subject_id && !incompleteQuestionIds.has(q.id))
+        );
 
-            const remainingQuestions = allQuestions.filter((q) => !incompleteQuestionIds.has(q.id));
-
-            return remainingQuestions;
-        });
-
+        // Include previously answered questions
         let totalQuestions = incompleteTests.flatMap((test) =>
             test.answers.map((answer) => ({
                 ...answer.question,
-                selectedOption: answer.selected_option,
+                selectedOption: answer.selected_option || null,
             }))
         );
 
         const remainingQuestionsToSelect = 40 - totalQuestions.length;
-
         if (remainingQuestionsToSelect > 0) {
             const additionalQuestions = selectedQuizData
                 .sort(() => Math.random() - 0.5)
-                .slice(0, remainingQuestionsToSelect);
+                .slice(0, remainingQuestionsToSelect)
+                .map((question) => ({
+                    ...question,
+                    selectedOption: null,
+                }));
 
             totalQuestions = [...totalQuestions, ...additionalQuestions];
         }
 
-        console.log("Final Selected Quiz Data:", totalQuestions);
+        console.log("Final Quiz Data:", totalQuestions);
+
+        // Update quiz data state and navigate
         setQuizData(totalQuestions);
 
-        if (testId) {
-            navigate("/exam", { state: { test_id: testId, time_left: timeLeft, mode } });
-        } else {
-            console.error("Test ID is not available");
-        }
+        navigate("/exam", {
+            state: {
+                test_id: testId,
+                time_left: timeLeft,
+                mode,
+                quizData: totalQuestions,
+            },
+        });
     };
+
+
+
 
 
 
@@ -391,26 +410,52 @@ const TakeWaecQuiz = () => {
                                     Continue where you left off:
                                 </h3>
                                 <div className="space-y-4">
-                                    {incompleteTests.map((test) => (
-                                        <div key={test.test_id} className="flex items-center justify-between border-b py-2">
-                                            <div>
-                                                <h4 className="text-md font-semibold text-gray-800">{`Study ${test.test_id}`}</h4>
-                                                <span className="text-sm text-gray-600">
-                                                    Subjects: {test.answers.map((answer) => answer.question.subject).join(", ")}
+                                    {incompleteTests.map((test) => {
+                                        // Extract unique subjects using a Set
+                                        const uniqueSubjects = Array.from(
+                                            new Set(test.answers.map((answer) => answer.question.subject))
+                                        );
+
+                                        // Calculate progress
+                                        const totalQuestions = 40; // Assuming 40 questions in total
+                                        const answeredQuestions = test.answers.length; // Number of answered questions
+                                        const progressPercentage = (answeredQuestions / totalQuestions) * 100;
+
+                                        return (
+                                            <div key={test.test_id} className="flex flex-col border-b py-4">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div>
+                                                        <h4 className="text-md font-semibold text-gray-800">{`Study ${test.test_id}`}</h4>
+                                                        <span className="text-sm text-gray-600">
+                                                            Subjects: {uniqueSubjects.join(", ")}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => continueQuiz(test.test_id)}
+                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                    >
+                                                        Continue
+                                                    </button>
+                                                </div>
+
+                                                {/* Progress Bar */}
+                                                <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-blue-500"
+                                                        style={{ width: `${progressPercentage}%` }}
+                                                    ></div>
+                                                </div>
+                                                <span className="text-sm text-gray-600 mt-1">
+                                                    {answeredQuestions} out of {totalQuestions} questions answered
                                                 </span>
                                             </div>
-                                            <button
-                                                onClick={() => continueQuiz(test.test_id)}
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                            >
-                                                Continue
-                                            </button>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
                     )}
+
                 </div>
             </div>
             <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">

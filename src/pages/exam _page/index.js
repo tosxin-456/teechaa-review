@@ -147,7 +147,7 @@ const ExamPage = () => {
     const [selectedExam, setSelectedExam] = useState({ examType: "", year: "" });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    
+
     useEffect(() => {
         const initialAnswers = quizData.reduce((acc, question) => {
             if (question.selectedOption) {
@@ -158,21 +158,45 @@ const ExamPage = () => {
         setSelectedAnswers(initialAnswers);
     }, [quizData]);
 
-
-    // console.log(selectedAnswers)
-
-    const letterToIndex = (letter) => letter.charCodeAt(0) - 65; // 'A' -> 0, 'B' -> 1, etc.
-
-
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const user = JSON.parse(localStorage.getItem("user"));
     const user_id = user?.user_id;
 
-    // const test = JSON.parse(localStorage.getItem("test_id"));
     const handleContinue = () => {
         setShowEntryModal(false);
     };
+
+    const saveUnansweredQuestions = async () => {
+        try {
+            const unansweredQuestions = currentSubjectQuestions.filter((question) =>
+                selectedAnswers[question.id] === undefined
+            );
+
+            const promises = unansweredQuestions.map((question) => {
+                return fetch(`${API_BASE_URL}/api/answer/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        mode:"exam",
+                        test_id,
+                        user_id,
+                        question_id: question.id,
+                        selected_option: null,
+                        is_correct: 0, // Assuming unanswered questions are marked incorrect
+                    }),
+                });
+            });
+
+            await Promise.all(promises);
+            console.log("All unanswered questions saved as null.");
+        } catch (error) {
+            console.error("Error saving unanswered questions:", error.message);
+        }
+    };
+
 
     const groupedQuestions = React.useMemo(() => {
         return (
@@ -200,14 +224,21 @@ const ExamPage = () => {
         return `${minutes < 10 ? `0${minutes}` : minutes}:${secs < 10 ? `0${secs}` : secs}`;
     };
 
-    // Save timeLeft to localStorage whenever it changes
     useEffect(() => {
-        if (timeLeft > 0 && mode === "exam") {
-            localStorage.setItem("timeLeft", timeLeft); // Store time in localStorage
-        } else {
-            localStorage.removeItem("timeLeft"); // Remove from localStorage when time reaches 0
+        if (timeLeft <= 0 && mode === "exam") {
+            saveUnansweredQuestions().then(() => {
+                handleSubmit(); // Automatically submit when time expires
+            });
+            return;
         }
+
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer); // Cleanup on component unmount
     }, [timeLeft]);
+
 
     // Start countdown when timeLeft is greater than 0
     useEffect(() => {
@@ -224,7 +255,7 @@ const ExamPage = () => {
         try {
             const questionId = currentSubjectQuestions[currentQuestionIndex]?.id;
             const isCorrect = currentSubjectQuestions[currentQuestionIndex]?.correct_option === selectedOptionIndex;
-
+            const optionsMap = { 0: "A", 1: "B", 2: "C", 3: "D" };
             const response = await fetch(`${API_BASE_URL}/api/answer/${user_id}`, {
                 method: "POST",
                 headers: {
@@ -234,7 +265,7 @@ const ExamPage = () => {
                     test_id,
                     user_id,
                     question_id: questionId,
-                    selected_option: selectedOptionIndex,
+                    selected_option: optionsMap[selectedOptionIndex],
                     is_correct: isCorrect,
                 }),
             });
@@ -250,68 +281,44 @@ const ExamPage = () => {
     const handleOptionSelect = async (index) => {
         const questionId = currentSubjectQuestions[currentQuestionIndex]?.id;
 
-        // Update selectedAnswers state
+        if (!questionId) {
+            console.error("Invalid question ID");
+            return;
+        }
+        // Update the state for selected answers
         setSelectedAnswers((prev) => ({
             ...prev,
             [questionId]: index, // Use question ID as the key
         }));
-
-        // Save the answer asynchronously
-        await saveAnswerToDatabase(questionId, index);
+        
+        console.log(questionId, index, selectedAnswers)
+        try {
+            // Save the answer asynchronously
+            await saveAnswerToDatabase(questionId, index);
+            console.log(`Answer for question ${questionId} saved successfully: Option ${index}`);
+        } catch (error) {
+            console.error(`Failed to save answer for question ${questionId}:`, error.message);
+            // Optional: Add retry logic or notify the user
+        }
     };
 
-
-
-
-    useEffect(() => {
-        const fetchSavedAnswers = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/answer/${user_id}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch saved answers");
-                }
-
-                const answers = await response.json();
-                // console.log(answers)
-                const formattedAnswers = answers.data.reduce((acc, answer) => {
-                    const subject = answer.subject.toUpperCase();
-                    if (!acc[subject]) acc[subject] = {};
-                    acc[subject][answer.question_index] = answer.selected_option;
-                    return acc;
-                }, {});
-
-                setSelectedAnswers(formattedAnswers);
-                console.log(formattedAnswers)
-            } catch (error) {
-                console.error("Error fetching saved answers:", error.message);
-            }
-        };
-
-        fetchSavedAnswers();
-    }, []);
 
     const handleNext = async () => {
         const currentQuestionId = currentSubjectQuestions[currentQuestionIndex]?.id; // Get current question ID
         const correctAnswer = currentSubjectQuestions[currentQuestionIndex]?.correctAnswer; // Get correct answer for comparison
-        const selectedOption = selectedAnswers[currentQuestionId]; // Lookup selected answer by question ID
+        const selectedOption = selectedAnswers[currentQuestionId] !== undefined ? selectedAnswers[currentQuestionId] : null;
 
-        // Debugging Logs
+        const optionsMap = { 0: "A", 1: "B", 2: "C", 3: "D" };
         console.log("Selected Answers:", selectedAnswers);
         console.log("Current Question ID:", currentQuestionId);
         console.log("Selected Option:", selectedOption);
         console.log("Correct Answer:", correctAnswer);
 
         // Check if question ID and selected option are valid
-        if (currentQuestionId && selectedOption !== undefined) {
+        if (currentQuestionId && selectedOption !== undefined && selectedOption !== null) {
             const isCorrect = selectedOption === correctAnswer ? 1 : 0; // Determine correctness
             const answerData = {
-                selected_option: selectedOption,
+                selected_option: optionsMap[selectedOption],
                 is_correct: isCorrect,
                 user_id,
                 question_id: currentQuestionId,
@@ -376,13 +383,14 @@ const ExamPage = () => {
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        await saveUnansweredQuestions(); // Save unanswered questions
         const formattedAnswers = currentSubjectQuestions.map((question) => {
             const selectedOption = selectedAnswers[question.id];
             const isCorrect = selectedOption === question.correctAnswer ? 1 : 0;
 
             return {
-                user_answer_id: question.id,  // Example: you may need to generate this ID dynamically
+                user_answer_id: question.id,
                 user_id: user_id,
                 question_id: question.id,
                 test_id: test_id,
@@ -396,7 +404,7 @@ const ExamPage = () => {
                     year: question.year,
                     examType: question.examType,
                     question: question.question,
-                    image: question.image, // Ensure this is passed correctly if available
+                    image: question.image,
                     subject: question.subject,
                     explanation: question.explanation,
                     option_a: question.option_a,
@@ -404,90 +412,29 @@ const ExamPage = () => {
                     option_c: question.option_c,
                     option_d: question.option_d,
                     correctAnswer: question.correctAnswer,
-                }
+                },
             };
         });
 
         console.log("Submitting Answers:", formattedAnswers);
-
-        // Navigate to the result page with the formatted answers
         navigate("/result", { state: { result: formattedAnswers } });
     };
 
-
-    useEffect(() => {
-        const fetchUserResult = async () => {
-            const user = JSON.parse(localStorage.getItem("user"));
-            const userId = user?.user_id;
-
-            if (!userId) {
-                setError("User not logged in.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/answer/${userId}`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || "Failed to fetch user results");
-                }
-
-                const resultData = await response.json();
-                console.log("Raw Data:", resultData.data); // Keep data raw for debugging
-                setUserResults(resultData.data); // No normalization
-            } catch (error) {
-                console.error("Error fetching result data:", error.message);
-                setError("Failed to fetch user results.");
-            }
-        };
-
-        fetchUserResult();
-    }, []);
-
-
-
-    const handleQuizSelection = (examType) => {
-        if (!selectedExam.year) {
-            alert("Please select the exam year.");
-            return;
-        }
-
-        setLoading(true);
-        setError("");
-
-        // Filter results by exam type and year
-        const filteredResults = userResults.filter(
-            (item) => item.question.examType === examType && item.question.year === selectedExam.year
-        );
-
-        if (filteredResults.length === 0) {
-            setError("No result found for the selected exam and year.");
-            setLoading(false);
-            return;
-        }
-
-        setLoading(false);
-        console.log("Filtered Results:", filteredResults);
-
-        // Navigate with filtered results
-        navigate("/result", { state: { result: filteredResults } });
+    const handleExit = async () => {
+        await saveUnansweredQuestions(); // Save unanswered questions
+        navigate(-1); // Go back to the previous page
+        localStorage.removeItem("timeLeft"); // Remove the saved timeLeft from localStorage
     };
+
+
+
+
 
     const handleBackNavigation = () => {
         setShowConfirmModal(true);
     };
 
 
-
-
-    const handleExit = () => {
-        navigate(-1);  // This will navigate back to the previous page
-        localStorage.removeItem('timeLeft');  // Remove the saved timeLeft from localStorage
-    };
 
 
     return (
@@ -530,16 +477,6 @@ const ExamPage = () => {
                     onClick={() => setSidebarOpen(true)}
                     className="p-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-all duration-300"
                 >
-                    {/* <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg> */}
                     <span>Questions Bar</span>
                 </button>
 

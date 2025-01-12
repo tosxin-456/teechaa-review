@@ -52,7 +52,7 @@ const ResultPage = () => {
             window.MathJax.typesetPromise();
         }
     }, [currentQuestionIndex, selectedSubject]);
-
+    console.log(selectedOption)
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-r from-gray-100 to-gray-200">
             <nav className="bg-[#2148C0] shadow-md px-4 py-3 flex items-center justify-between">
@@ -136,7 +136,7 @@ const ResultPage = () => {
                         </div>
 
                         {/* Unanswered Question Notice */}
-                        {selectedOption === undefined || selectedOption === null ? (
+                        {selectedOption === undefined || selectedOption === null || selectedOption==="" ? (
                             <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
                                 <h4 className="font-semibold text-yellow-600">
                                     Question Not Answered

@@ -3,14 +3,14 @@ import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaArrowRight } from "react-i
 import QuizData from "../../utils/questions";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const ResultPage = () => {
+const ResultCheckerPage = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const sidebarRef = useRef(null);
     const navigate = useNavigate();
     const { state } = useLocation();
     const { result } = state || {};
-    console.log(result);
+    // console.log(result);
 
     const attemptedSubjects = QuizData.filter((subject) =>
         Object.keys(result?.answers || {}).includes(subject.subject)
@@ -159,7 +159,7 @@ const ResultPage = () => {
                         </div>
 
                         {studentAnswerForSubject[currentQuestionIndex] === null ||
-                            studentAnswerForSubject[currentQuestionIndex] === undefined ? (
+                            studentAnswerForSubject[currentQuestionIndex] === undefined  ? (
                             <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
                                 <h4 className="font-semibold text-yellow-700">Unanswered Question</h4>
                                 <p>You did not select an answer for this question.</p>
@@ -252,4 +252,4 @@ const ResultPage = () => {
     );
 };
 
-export default ResultPage;
+export default ResultCheckerPage;
