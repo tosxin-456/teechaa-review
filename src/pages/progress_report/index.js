@@ -17,30 +17,23 @@ import { API_BASE_URL } from "../../config/apiConfig";
 
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7f50", "#d45087", "#2ca02c"];
 
-const examData = [
-    { year: 2021, subject: "Mathematics", correct: 30, examType: "WAEC" },
-    { year: 2021, subject: "English", correct: 25, examType: "WAEC" },
-    { year: 2021, subject: "Physics", correct: 20, examType: "JAMB" },
-    { year: 2022, subject: "Mathematics", correct: 25, examType: "WAEC" },
-    { year: 2022, subject: "English", correct: 20, examType: "JAMB" },
-    { year: 2022, subject: "Physics", correct: 30, examType: "WAEC" },
-    { year: 2023, subject: "Mathematics", correct: 50, examType: "JAMB" },
-    { year: 2023, subject: "English", correct: 45, examType: "WAEC" },
-    { year: 2023, subject: "Physics", correct: 10, examType: "JAMB" },
-];
+
 
 const ProgressReport = () => {
     const [selectedYear, setSelectedYear] = useState("All");
     const [selectedSubject, setSelectedSubject] = useState("All");
     const [selectedExamType, setSelectedExamType] = useState("All");
+    const [selectedMode, setSelectedMode] = useState("All");
     const user = JSON.parse(localStorage.getItem('user'))
     const userId = user.user_id
     const [progressData, setProgressData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [rawData, setRawData] = useState([]);
     const navigate = useNavigate()
+
     useEffect(() => {
-        const fetchUserProgress = async () => {
-            const user = JSON.parse(localStorage.getItem('user'));
+        const fetchUserResults = async () => {
+            const user = JSON.parse(localStorage.getItem("user"));
             const userId = user?.user_id;
 
             if (!userId) {
@@ -49,47 +42,83 @@ const ProgressReport = () => {
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/progress/user/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                const response = await fetch(`${API_BASE_URL}/api/answer/${userId}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to fetch user results');
+                    throw new Error(errorData.message || "Failed to fetch user results.");
                 }
 
-                const progressiveData = await response.json();
-                setLoading(false)
-                console.log('Normalized Data:', progressiveData);
-                setProgressData(progressiveData);
+                const resultData = await response.json();
+                console.log(resultData)
+                setRawData(resultData.data);
             } catch (error) {
-                console.error('Error fetching result data:', error.message);
-                // setError('Failed to fetch user results.');
+                console.error("Error fetching results:", error.message);
+                // setError("Failed to fetch user results.");
             }
         };
 
+        fetchUserResults();
+    }, []);
+    console.log(rawData)
 
-        fetchUserProgress();
+    const examData = rawData.reduce((acc, entry) => {
+        const { year, examType, subject } = entry.question;
+        const isCorrect = entry.is_correct === 1;
+        const createdAt = entry.createdAt;
+        const mode = entry.mode;
+
+        // Find or create the grouping
+        let group = acc.find(
+            item => item.year === year && item.examType === examType && item.subject === subject
+        );
+
+        if (!group) {
+            group = { year, subject, correct: 0, examType, createdAt, modes: [] };
+            acc.push(group);
+        }
+
+        // Increment correct count if the answer is correct
+        if (isCorrect) {
+            group.correct += 1;
+        }
+
+        // Update createdAt to the earliest timestamp
+        if (new Date(createdAt) < new Date(group.createdAt)) {
+            group.createdAt = createdAt;
+        }
+
+        // Add mode if it's not already in the modes array
+        if (!group.modes.includes(mode)) {
+            group.modes.push(mode);
+        }
+
+        return acc;
     }, []);
 
-    if (loading) {
-        return <div>Loading progress...</div>;
-    }
+    console.log(examData);
 
-    if (progressData.length === 0) {
+
+    // console.log(examData);
+
+
+    if (examData.length === 0) {
         return <div>No progress data available for this user.</div>;
     }
 
 
 
-    const filteredData = progressData.filter((entry) => {
+    const filteredData = examData.filter((entry) => {
         return (
             (selectedYear === "All" || entry.year === Number(selectedYear)) &&
             (selectedSubject === "All" || entry.subject === selectedSubject) &&
-            (selectedExamType === "All" || entry.examType === selectedExamType)
+            (selectedExamType === "All" || entry.examType === selectedExamType)&&
+            (selectedMode === "All" || entry.modes.includes(selectedMode))
+
+
         );
     });
 
@@ -99,7 +128,7 @@ const ProgressReport = () => {
 
 
     const lineChartData = (() => {
-        const allYears = [...new Set(progressData.map((item) => item.year))];
+        const allYears = [...new Set(examData.map((item) => item.year))];
         const minYear = Math.min(...allYears);
         const maxYear = Math.max(...allYears);
 
@@ -187,14 +216,14 @@ const ProgressReport = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
                     <select
                         className="p-2 border rounded"
                         value={selectedYear}
                         onChange={(e) => setSelectedYear(e.target.value)}
                     >
                         <option value="All">All Years</option>
-                        {[...new Set(progressData.map((item) => item.year))].map((year) => (
+                        {[...new Set(examData.map((item) => item.year))].map((year) => (
                             <option key={year} value={year}>
                                 {year}
                             </option>
@@ -207,7 +236,7 @@ const ProgressReport = () => {
                         onChange={(e) => setSelectedSubject(e.target.value)}
                     >
                         <option value="All">All Subjects</option>
-                        {[...new Set(progressData.map((item) => item.subject))].map((subject) => (
+                        {[...new Set(examData.map((item) => item.subject))].map((subject) => (
                             <option key={subject} value={subject}>
                                 {subject}
                             </option>
@@ -220,12 +249,26 @@ const ProgressReport = () => {
                         onChange={(e) => setSelectedExamType(e.target.value)}
                     >
                         <option value="All">All Exam Types</option>
-                        {[...new Set(progressData.map((item) => item.examType))].map((examType) => (
+                        {[...new Set(examData.map((item) => item.examType))].map((examType) => (
                             <option key={examType} value={examType}>
                                 {examType}
                             </option>
                         ))}
                     </select>
+
+                    <select
+                        className="p-2 border rounded"
+                        value={selectedMode}
+                        onChange={(e) => setSelectedMode(e.target.value)}
+                    >
+                        <option value="All">All Modes</option>
+                        {[...new Set(examData.flatMap((item) => item.modes))].map((mode) => (
+                            <option key={mode} value={mode}>
+                                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                            </option>
+                        ))}
+                    </select>
+
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white p-6 rounded-lg lg:w-[80%] lg:m-auto shadow-lg">
@@ -319,7 +362,7 @@ const ProgressReport = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {progressData.map((item, index) => (
+                            {examData.map((item, index) => (
                                 <tr key={index}>
                                     <td className="border-b p-2">
                                         {new Date(item.createdAt).toLocaleDateString()} {/* Formats the date */}

@@ -180,7 +180,7 @@ const ExamPage = () => {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        mode:"exam",
+                        mode: "exam",
                         test_id,
                         user_id,
                         question_id: question.id,
@@ -253,9 +253,11 @@ const ExamPage = () => {
 
     const saveAnswerToDatabase = async (selectedOptionIndex) => {
         try {
-            const questionId = currentSubjectQuestions[currentQuestionIndex]?.id;
-            const isCorrect = currentSubjectQuestions[currentQuestionIndex]?.correct_option === selectedOptionIndex;
             const optionsMap = { 0: "A", 1: "B", 2: "C", 3: "D" };
+            const correctMap = { A: "1", B: "2", C: "3", D: "4" };
+            const questionId = currentSubjectQuestions[currentQuestionIndex]?.id;
+            const isCorrect = currentSubjectQuestions[currentQuestionIndex]?.correct_option === correctMap[selectedOptionIndex];
+            console.log(correctMap[selectedOptionIndex])
             const response = await fetch(`${API_BASE_URL}/api/answer/${user_id}`, {
                 method: "POST",
                 headers: {
@@ -290,7 +292,7 @@ const ExamPage = () => {
             ...prev,
             [questionId]: index, // Use question ID as the key
         }));
-        
+
         console.log(questionId, index, selectedAnswers)
         try {
             // Save the answer asynchronously
@@ -307,7 +309,7 @@ const ExamPage = () => {
         const currentQuestionId = currentSubjectQuestions[currentQuestionIndex]?.id; // Get current question ID
         const correctAnswer = currentSubjectQuestions[currentQuestionIndex]?.correctAnswer; // Get correct answer for comparison
         const selectedOption = selectedAnswers[currentQuestionId] !== undefined ? selectedAnswers[currentQuestionId] : null;
-
+        const correctMap = { 0: "1", 1: "2", 2: "3", 3: "4" };
         const optionsMap = { 0: "A", 1: "B", 2: "C", 3: "D" };
         console.log("Selected Answers:", selectedAnswers);
         console.log("Current Question ID:", currentQuestionId);
@@ -316,7 +318,7 @@ const ExamPage = () => {
 
         // Check if question ID and selected option are valid
         if (currentQuestionId && selectedOption !== undefined && selectedOption !== null) {
-            const isCorrect = selectedOption === correctAnswer ? 1 : 0; // Determine correctness
+            const isCorrect = correctMap[selectedOption] === correctAnswer ? 1 : 0; // Determine correctness
             const answerData = {
                 selected_option: optionsMap[selectedOption],
                 is_correct: isCorrect,
@@ -421,7 +423,9 @@ const ExamPage = () => {
     };
 
     const handleExit = async () => {
-        await saveUnansweredQuestions(); // Save unanswered questions
+        if (mode === "exam") {
+            await saveUnansweredQuestions(); // Save unanswered questions
+        }
         navigate(-1); // Go back to the previous page
         localStorage.removeItem("timeLeft"); // Remove the saved timeLeft from localStorage
     };

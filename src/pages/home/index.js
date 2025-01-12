@@ -21,7 +21,7 @@ const Dashboard = () => {
         { id: 2, title: "Take WAEC", description: "Ace your WAEC exam with our extensive study materials and practice tests.", icon: <FaClipboardCheck color="#2148C0" />, path: "/take-waec" },
         { id: 3, title: "Questions Search", description: "Find detailed questions and answers for exams.", icon: <FaQuestionCircle color="#2148C0" />, path: "/search-questions" },
         { id: 4, title: "Progress Report", description: "Track your progress and performance.", icon: <FaChartLine color="#2148C0" />, path: "/progress-report" },
-        { id: 5, title: "Upcoming Tests", description: "Stay updated on your scheduled tests.", icon: <FaCalendarAlt color="#2148C0" />, path: "/upcoming-tests" },
+        { id: 5, title: "Exam History", description: "Stay updated on your exams history", icon: <FaCalendarAlt color="#2148C0" />, path: "/upcoming-tests" },
         { id: 6, title: "Result Checker", description: "Check your results instantly.", icon: <FaClipboardCheck color="#2148C0" />, path: "/result-checker" },
     ];
 
