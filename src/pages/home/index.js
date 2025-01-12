@@ -5,7 +5,7 @@ import {
     FaBook,
     FaQuestionCircle,
     FaChartLine,
-    FaCalendarAlt,
+    FaHistory,
     FaClipboardCheck,
     FaMoon,
     FaSun
@@ -21,7 +21,7 @@ const Dashboard = () => {
         { id: 2, title: "Take WAEC", description: "Ace your WAEC exam with our extensive study materials and practice tests.", icon: <FaClipboardCheck color="#2148C0" />, path: "/take-waec" },
         { id: 3, title: "Questions Search", description: "Find detailed questions and answers for exams.", icon: <FaQuestionCircle color="#2148C0" />, path: "/search-questions" },
         { id: 4, title: "Progress Report", description: "Track your progress and performance.", icon: <FaChartLine color="#2148C0" />, path: "/progress-report" },
-        { id: 5, title: "Exam History", description: "Stay updated on your exams history", icon: <FaCalendarAlt color="#2148C0" />, path: "/upcoming-tests" },
+        { id: 5, title: "Exam History", description: "Stay updated on your exams history", icon: <FaHistory color="#2148C0" />, path: "/exam-history"},
         { id: 6, title: "Result Checker", description: "Check your results instantly.", icon: <FaClipboardCheck color="#2148C0" />, path: "/result-checker" },
     ];
 
@@ -39,7 +39,7 @@ const Dashboard = () => {
                     <button onClick={() => navigate('/profile')} className="text-[#2148C0] flex items-center hover:underline ">
                         <FaUser className="mr-2" /> Profile
                     </button>
-                    <button onClick={()=>navigate('/login')} className="text-red-500 flex items-center hover:underline">
+                    <button onClick={() => navigate('/login')} className="text-red-500 flex items-center hover:underline">
                         <FaSignOutAlt className="mr-2" /> Logout
                     </button>
                 </div>

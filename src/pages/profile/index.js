@@ -60,6 +60,7 @@ const StudentProfilePage = () => {
                 };
 
                 setStudent(filteredData);
+                console.log(filteredData)
                 setFormData(filteredData);
                 if (userData.profile_image) {
                     setProfileImagePreview(userData.profile_image); // Use the URL from the server
@@ -132,33 +133,36 @@ const StudentProfilePage = () => {
 
 
 
-    // Update user profile
-    const handleUpdate = async () => {
+    const handleUpdateDetails = async () => {
         try {
-            const formDataToSend = new FormData();
-            Object.keys(formData).forEach((key) => {
-                formDataToSend.append(key, formData[key]);
-            });
-            if (selectedImage) {
-                formDataToSend.append("profile_image", selectedImage);
-            }
-
-            const response = await fetch(`${API_BASE_URL}/api/users/profile-image/${userId}`, {
-                method: "PATCH",
-                body: formDataToSend,
+            const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData), // formData contains user details
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to update profile");
+                throw new Error(errorData.message || "Failed to update user details");
             }
 
             const updatedData = await response.json();
-            setStudent((prev) => ({ ...prev, profile_image: updatedData.profile_image }));
-            setProfileImagePreview(updatedData.profile_image);
-            setIsEditing(false);
+            const filteredData = {
+                firstName: updatedData.user.firstName || "",
+                lastName: updatedData.user.lastName || "",
+                email: updatedData.user.email || "",
+                phone: updatedData.user.phoneNumber || "",
+                gender: updatedData.user.gender || "",
+                dob: updatedData.user.dob || "",
+                country: updatedData.user.country || "",
+                state: updatedData.user.state || "",
+            };
+            setStudent(filteredData);
+            alert("User details updated successfully!");
         } catch (error) {
-            console.error("Error updating profile:", error.message);
+            console.error("Error updating user details:", error.message);
         }
     };
 
@@ -237,14 +241,15 @@ const StudentProfilePage = () => {
                 <div className="space-y-6">
                     {!isEditing ? (
                         <>
-                            <div className="space-y-4 text-sm sm:text-base">
-                                {Object.entries(student).map(([key, value]) => (
-                                    <p key={key} className="flex justify-between text-gray-700">
-                                        <span className="font-semibold capitalize">{key}:</span>
-                                        <span>{value || "Not provided"}</span>
-                                    </p>
-                                ))}
-                            </div>
+                            {Object.entries(student).map(([key, value]) => (
+                                <p key={key} className="flex justify-between text-gray-700">
+                                    <span className="font-semibold capitalize">{key}:</span>
+                                    <span>
+                                        {typeof value === "object" && value !== null ? JSON.stringify(value) : value || "Not provided"}
+                                    </span>
+                                </p>
+                            ))}
+
 
                             <div className="flex justify-center gap-4 mt-6">
                                 <button
@@ -266,7 +271,7 @@ const StudentProfilePage = () => {
                             className="space-y-4"
                             onSubmit={(e) => {
                                 e.preventDefault();
-                                handleUpdate();
+                                handleUpdateDetails();
                             }}
                         >
                             {Object.keys(student).map((key) => (

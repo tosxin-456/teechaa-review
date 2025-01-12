@@ -19,6 +19,7 @@ import ScheuleExam from "./pages/schedule_exam";
 import ExamPage from "./pages/exam _page";
 import Results2Page from "./test";
 import { QuizProvider } from "./utils/api/Redux/QuizContext";
+import ExamHistory from "./pages/exam_history";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
             <Route path="/schedule-exam" element={<ScheuleExam />} />
             <Route path="/exam" element={<ExamPage />} />
             <Route path="/results" element={<Results2Page />} />
+            <Route path="/exam-history" element={<ExamHistory />} />
           </Routes>
         </Router>
       </div>
