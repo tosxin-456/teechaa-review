@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaCamera, FaArrowLeft } from "react-icons/fa";
-import profilePlaceholder from "../../assets/Screenshot (5).png";
+// import profilePlaceholder from "../../assets/Screenshot (5).png";
 import bg from "../../assets/first_bg.png"; // background image
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiConfig";
@@ -12,14 +12,14 @@ const StudentProfilePage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
     const [isModalOpen, setModalOpen] = useState(false);
+    const profilePlaceholder = 'https://www.gravatar.com/avatar/c7763a1c6be16ffb347e8500434b61eb?s=200&r=pg&d=mm'
     const [selectedImage, setSelectedImage] = useState(null);
     const [profileImagePreview, setProfileImagePreview] = useState(
         student.profile_image
-            ? `data:image/jpeg;base64,${btoa(
-                String.fromCharCode(...new Uint8Array(student.profile_image.data))
-            )}`
-            : profilePlaceholder
+            ? student.profile_image // Use the student's profile image if it exists
+            : profilePlaceholder // Fallback to the placeholder if no profile image
     );
+
 
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
     const navigate = useNavigate();

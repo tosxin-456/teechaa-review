@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { API_BASE_URL } from "../../config/apiConfig";
 
-const OTPPage = () => {
+const OTPResetPage = () => {
     const [otp, setOtp] = useState(new Array(6).fill(""));
     const [timer, setTimer] = useState(localStorage.getItem("otpTimer") || 420); // Load timer from localStorage
     const [resendAvailable, setResendAvailable] = useState(false);
@@ -13,6 +13,8 @@ const OTPPage = () => {
     const navigate = useNavigate();
 
     const handleSubmit = async () => {
+        const email = localStorage.getItem("email");
+
         try {
             const otpString = otp.join("");
             if (otpString.length < 6) {
@@ -20,12 +22,12 @@ const OTPPage = () => {
                 return;
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/otp/verify-otp/${user_id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/verify-otp`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ otp: otpString }),
+                body: JSON.stringify({ otp: otpString, email }),
             });
 
             const data = await response.json();
@@ -36,22 +38,13 @@ const OTPPage = () => {
             }
 
             alert("OTP Verified Successfully!");
-            const { user, token } = data;
-            toast.success("User registered successfully");
-            console.log("User registered:", user);
-            localStorage.setItem('user', JSON.stringify(user));
-            localStorage.setItem('token', token);
-
-            // Clear the OTP timer and user_id upon successful login
-            localStorage.removeItem('otpTimer');
-            localStorage.removeItem('user_id');
-
-            navigate(`/dashboard`);
+            navigate(`/reset-password`); // Navigate to the reset password page
         } catch (error) {
             console.error("Error verifying OTP:", error);
             alert("Error verifying OTP. Please try again.");
         }
     };
+
 
     useEffect(() => {
         let interval;
@@ -78,15 +71,16 @@ const OTPPage = () => {
     };
 
     const handleChange = (value, index) => {
-        if (isNaN(value)) return;
+        if (!/^\d*$/.test(value)) return; // Only allow numeric input
         const newOtp = [...otp];
-        newOtp[index] = value.slice(0, 1);
+        newOtp[index] = value.slice(0, 1); // Keep single character per box
         setOtp(newOtp);
 
         if (value && index < otp.length - 1) {
             inputRefs.current[index + 1]?.focus();
         }
     };
+
 
     const handleKeyDown = (e, index) => {
         if (e.key === "Backspace" && !otp[index] && index > 0) {
@@ -108,28 +102,36 @@ const OTPPage = () => {
     };
 
     const handleResend = async () => {
-        setTimer(120);
+        const timerDuration = 420;
+        setTimer(timerDuration);
         setResendAvailable(false);
         setOtp(new Array(6).fill(""));
-
-        // Save the new timer in localStorage
-        localStorage.setItem("otpTimer", 120);
-
+        localStorage.setItem("otpTimer", timerDuration);
+        const email = localStorage.getItem('email')
         try {
-            const response = await fetch(`${API_BASE_URL}/api/otp/generate-new-otp/${user_id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/generate-new-otp`, {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                }),
             });
+
             const data = await response.json();
+
             if (response.ok) {
-                alert("A new OTP has been sent!");
+                alert("A new OTP has been sent! Please check your email.");
             } else {
-                alert(data.message || "Unable to resend OTP.");
+                alert(data.message || "Unable to resend OTP. Please try again later.");
             }
         } catch (error) {
             console.error("Error generating new OTP:", error);
             alert("Error sending OTP. Please try again.");
         }
     };
+
 
     return (
         <div
@@ -172,7 +174,7 @@ const OTPPage = () => {
                     <button
                         onClick={handleResend}
                         className="text-white font-semibold hover:underline"
-                        // disabled={resendAvailable}
+                    // disabled={resendAvailable}
                     >
                         Resend OTP
                     </button>
@@ -205,4 +207,4 @@ const OTPPage = () => {
     );
 };
 
-export default OTPPage;
+export default OTPResetPage;

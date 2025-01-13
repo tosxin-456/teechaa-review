@@ -1,22 +1,45 @@
 import React, { useState } from "react";
 import bg from "../../assets/first_bg.png";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        // Simulate sending a reset link
-        setTimeout(() => {
+        try {
+            // Send email to the backend API to trigger OTP generation
+            const response = await fetch(`${API_BASE_URL}/api/users/forgot-password`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            // Check if the response is successful
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('email', email)
+                alert(`OTP has been sent to ${email}`);
+                navigate('/reset-otp');
+            } else {
+                // Handle errors like user not found or others
+                const errorData = await response.json();
+                alert(errorData.message || "An error occurred. Please try again.");
+            }
+        } catch (error) {
+            // Handle fetch or network errors
+            console.error("Error sending OTP:", error);
+            alert("An error occurred. Please try again.");
+        } finally {
             setLoading(false);
-            alert(`A reset link has been sent to ${email}`);
-            navigate('/otp');
-        }, 2000);
+        }
     };
 
     return (
@@ -56,12 +79,12 @@ const ForgotPassword = () => {
                         type="submit"
                         disabled={loading}
                         className={`w-full bg-white py-2 text-[#2148C0] rounded-lg  transition duration-300
-                            ${loading
+                ${loading
                                 ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-white hover:bg-gray-200"
+                                : "bg-white hover:bg-gray-200"
                             }`}
                     >
-                        {loading ? "Sending..." : "Send Reset Link"}
+                        {loading ? "Sending..." : "Send Reset OTP"}
                     </button>
                 </form>
 

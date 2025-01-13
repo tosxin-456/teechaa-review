@@ -63,13 +63,11 @@ const SignupPage = () => {
             // Check if the response is ok
             if (response.ok) {
                 const responseData = await response.json();
-                const { user, token } = responseData;
+                const { user_id } = responseData;
                 toast.success("User registered successfully");
-                console.log("User registered:", user);
-                localStorage.setItem('user', JSON.stringify(user));
-                localStorage.setItem('token', token);
+                localStorage.setItem('user_id', user_id);
 
-                navigate(`/dashboard`);
+                navigate(`/otp`);
             } else {
                 // If the response is not ok, log the response status and body
                 const result = await response.json();

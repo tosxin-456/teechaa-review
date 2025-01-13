@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import bg from "../../assets/first_bg.png";
 import { useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi"; // Eye icons for visibility toggle
+import { API_BASE_URL } from "../../config/apiConfig";
 
 const ResetPassword = () => {
     const [password, setPassword] = useState("");
@@ -12,7 +13,7 @@ const ResetPassword = () => {
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
 
@@ -23,13 +24,34 @@ const ResetPassword = () => {
         }
 
         setLoading(true);
+        const email = localStorage.getItem('email')
+        try {
+            const response = await fetch(`${ API_BASE_URL}/api/users/update-password`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    newPassword: password,
+                }),
+            });
 
-        // Simulate password reset request
-        setTimeout(() => {
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Password reset successful!");
+                localStorage.clear()
+                navigate("/login");
+            } else {
+                setError(data.message || "Failed to reset password");
+            }
+        } catch (err) {
+            console.error("Error resetting password:", err);
+            setError("An error occurred. Please try again.");
+        } finally {
             setLoading(false);
-            alert("Password reset successful!");
-            navigate("/login");
-        }, 2000);
+        }
     };
 
     return (

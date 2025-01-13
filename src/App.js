@@ -20,6 +20,7 @@ import ExamPage from "./pages/exam _page";
 import Results2Page from "./test";
 import { QuizProvider } from "./utils/api/Redux/QuizContext";
 import ExamHistory from "./pages/exam_history";
+import OTPResetPage from "./pages/otpRestPass";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/otp" element={<OTPPage />} />
+            <Route path="/reset-otp" element={<OTPResetPage />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/search-questions" element={<SearchQuestions />} />
             <Route path="/result-checker" element={<SelectQuiz />} />
