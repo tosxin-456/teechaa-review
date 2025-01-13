@@ -24,7 +24,13 @@ const SearchQuestions = () => {
     useEffect(() => {
         const fetchFilterOptions = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/questions/filter`);
+                const response = await fetch(`${API_BASE_URL}/api/questions/filter`, {
+                    method: "GET", 
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`, // Add token from localStorage
+                    },
+                });
                 if (!response.ok) throw new Error("Failed to fetch filter options");
                 const data = await response.json();
                 setFilterOptions(data);
@@ -51,7 +57,13 @@ const SearchQuestions = () => {
                 examType: filters.examType,
             }).toString();
 
-            const response = await fetch(`${API_BASE_URL}/api/questions/search/${filters.query}?${queryString}`);
+            const response = await fetch(`${API_BASE_URL}/api/questions/search/${filters.query}?${queryString}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`, // Add token from localStorage
+                },
+            });
             if (!response.ok) throw new Error("Failed to fetch search results");
             const data = await response.json();
             setResults(data);

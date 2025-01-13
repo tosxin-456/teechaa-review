@@ -178,6 +178,7 @@ const ExamPage = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
                     },
                     body: JSON.stringify({
                         mode: "exam",
@@ -262,6 +263,7 @@ const ExamPage = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
                 },
                 body: JSON.stringify({
                     test_id,
@@ -345,6 +347,7 @@ const ExamPage = () => {
                             method: "PATCH",
                             headers: {
                                 "Content-Type": "application/json",
+                                "Authorization": `Bearer ${localStorage.getItem("token")}`
                             },
                             body: JSON.stringify(answerData),
                         }
@@ -360,6 +363,7 @@ const ExamPage = () => {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`
                         },
                         body: JSON.stringify(answerData),
                     });

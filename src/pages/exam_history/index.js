@@ -27,7 +27,11 @@ const ExamHistory = () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/answer/${userId}`, {
                     method: "GET",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+
+                    },
                 });
 
                 if (!response.ok) {
@@ -90,31 +94,31 @@ const ExamHistory = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 p-8">
-                      <div className="flex items-center justify-between mb-6">
-                                <button
-                                    onClick={goBack}
-                                    className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
-                                >
-                                    <FaArrowLeft className="text-xl" />
-                                    Back
-                                </button>
-                                <div className="flex gap-4">
-                                    <button
-                                        onClick={handleSave}
-                                        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
-                                    >
-                                        <FaSave className="text-xl" />
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={handlePrint}
-                                        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
-                                    >
-                                        <FaPrint className="text-xl" />
-                                        Print
-                                    </button>
-                                </div>
-                            </div>
+            <div className="flex items-center justify-between mb-6">
+                <button
+                    onClick={goBack}
+                    className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
+                >
+                    <FaArrowLeft className="text-xl" />
+                    Back
+                </button>
+                <div className="flex gap-4">
+                    <button
+                        onClick={handleSave}
+                        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
+                    >
+                        <FaSave className="text-xl" />
+                        Save
+                    </button>
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
+                    >
+                        <FaPrint className="text-xl" />
+                        Print
+                    </button>
+                </div>
+            </div>
             <h2 className="text-4xl font-extrabold text-[#2148C0] text-center mb-3">Exam History</h2>
 
             {/* Loading Indicator */}

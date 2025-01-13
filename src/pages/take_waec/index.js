@@ -24,6 +24,7 @@ const TakeWaecQuiz = () => {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
                     },
                 });
 
@@ -49,6 +50,7 @@ const TakeWaecQuiz = () => {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
                     },
                 });
 
@@ -214,6 +216,7 @@ const TakeWaecQuiz = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
                 },
                 body: JSON.stringify({ user_id })
             });

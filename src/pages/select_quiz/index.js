@@ -29,7 +29,10 @@ const SelectQuiz = () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/answer/${userId}`, {
                     method: "GET",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
                 });
 
                 if (!response.ok) {
