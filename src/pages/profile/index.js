@@ -112,7 +112,6 @@ const StudentProfilePage = () => {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
                 },
                 body: formData,
             });
@@ -144,7 +143,6 @@ const StudentProfilePage = () => {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
                 },
                 body: JSON.stringify(formData), // formData contains user details
             });
