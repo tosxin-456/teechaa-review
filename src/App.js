@@ -21,12 +21,14 @@ import Results2Page from "./test";
 import { QuizProvider } from "./utils/api/Redux/QuizContext";
 import ExamHistory from "./pages/exam_history";
 import OTPResetPage from "./pages/otpRestPass";
+import { SessionExpirationPopup } from "./components/sessionExpiredPopup";
 
 function App() {
   return (
     <QuizProvider> {/* Wrapping the app with QuizProvider */}
       <div className="font-montserrat">
         <Router>
+          <SessionExpirationPopup/>
           <Routes>
             <Route path="/signup" element={<SignupPage />} />
             <Route path="*" element={<NotFound />} />

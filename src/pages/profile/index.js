@@ -55,7 +55,11 @@ const StudentProfilePage = () => {
                     email: userData.email || "",
                     phone: userData.phoneNumber || "",
                     gender: userData.gender || "",
-                    dob: userData.dob || "",
+                    dob: new Date(userData.dob).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                    }) || "",
                     country: userData.country || "",
                     state: userData.state || "",
                 };
@@ -157,7 +161,11 @@ const StudentProfilePage = () => {
                 email: updatedData.user.email || "",
                 phone: updatedData.user.phoneNumber || "",
                 gender: updatedData.user.gender || "",
-                dob: updatedData.user.dob || "",
+                dob: new Date(updatedData.user.dob).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                }) || "",
                 country: updatedData.user.country || "",
                 state: updatedData.user.state || "",
             };
