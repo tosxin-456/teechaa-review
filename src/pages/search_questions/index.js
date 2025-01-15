@@ -9,7 +9,7 @@ const SearchQuestions = () => {
         year: "",
         subject: "",
         examType: "",
-        query: "", 
+        query: "",
     });
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ const SearchQuestions = () => {
         const fetchFilterOptions = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/questions/filter`, {
-                    method: "GET", 
+                    method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${localStorage.getItem("token")}`, // Add token from localStorage
@@ -85,6 +85,13 @@ const SearchQuestions = () => {
         }
     }, [results]);
 
+    const highlightText = (text, searchWord) => {
+        if (!searchWord) return text;
+        const regex = new RegExp(`(${searchWord})`, "gi"); // Case-insensitive match
+        return text.replace(regex, '<span class="bg-yellow-300 font-bold">$1</span>');
+    };
+
+    console.log(results)
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-r from-white to-blue-50">
             <main className="flex-grow container mx-auto px-6 py-10">
@@ -190,34 +197,38 @@ const SearchQuestions = () => {
                 {error && <p className="text-center mt-6 text-lg text-red-500">{error}</p>}
 
                 {results.length > 0 && (
-                    <div className="mt-10 bg-white p-8 rounded-xl shadow-xl">
+                    <div className="mt-10 bg-white overflow-y-auto h-[30rem] p-8 rounded-xl shadow-xl">
                         <h3 className="text-2xl font-bold text-[#2148C0] mb-6">Search Results</h3>
                         {results.map((result) => (
                             <div key={result.id} className="mb-6">
                                 <h4 className="text-lg font-semibold text-gray-800 mb-3">
                                     {result.subject} ({result.examType}, {result.year})
                                 </h4>
-                                <p className="text-gray-600 mb-3">{result.question}</p>
+                                <p
+                                    className="text-gray-600 mb-3"
+                                    dangerouslySetInnerHTML={{
+                                        __html: highlightText(result.question, filters.query),
+                                    }}
+                                ></p>
                                 <ul className="list-disc list-inside space-y-2">
-                                    <li>
-                                        <strong>A:</strong> {result.option_a}
-                                    </li>
-                                    <li>
-                                        <strong>B:</strong> {result.option_b}
-                                    </li>
-                                    <li>
-                                        <strong>C:</strong> {result.option_c}
-                                    </li>
-                                    <li>
-                                        <strong>D:</strong> {result.option_d}
-                                    </li>
+                                    <li dangerouslySetInnerHTML={{ __html: highlightText(`A: ${result.option_a}`, filters.query) }}></li>
+                                    <li dangerouslySetInnerHTML={{ __html: highlightText(`B: ${result.option_b}`, filters.query) }}></li>
+                                    <li dangerouslySetInnerHTML={{ __html: highlightText(`C: ${result.option_c}`, filters.query) }}></li>
+                                    <li dangerouslySetInnerHTML={{ __html: highlightText(`D: ${result.option_d}`, filters.query) }}></li>
                                 </ul>
                                 <p className="mt-3 text-sm text-gray-500">
-                                    <strong>Correct Answer:</strong> {result[`option_${result.correctAnswer.toLowerCase()}`]}
+                                    <strong>Correct Answer:</strong>
+                                    {result.correctAnswer === "1" && ` A: ${result.option_a}`}
+                                    {result.correctAnswer === "2" && ` B: ${result.option_b}`}
+                                    {result.correctAnswer === "3" && ` C: ${result.option_c}`}
+                                    {result.correctAnswer === "4" && ` D: ${result.option_d}`}
                                 </p>
-                                <p className="mt-3 text-sm text-gray-500">
-                                    <strong>Explanation:</strong> {result.explanation}
-                                </p>
+                                <p
+                                    className="mt-3 text-sm text-gray-500"
+                                    dangerouslySetInnerHTML={{
+                                        __html: highlightText(result.explanation, filters.query),
+                                    }}
+                                ></p>
                             </div>
                         ))}
                     </div>
