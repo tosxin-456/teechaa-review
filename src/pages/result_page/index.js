@@ -152,7 +152,7 @@ const ResultPage = () => {
 
                             {selectedOption === undefined || selectedOption === null || selectedOption === "" ? (
                                 <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
-                                    <h4 className="font-semibold text-yellow-600">Question Not Answered</h4>
+                                    <h4 className="font-semibold text-yellow-600">Option Not Selected</h4>
                                     <p>Please review this question and its explanation carefully.</p>
                                 </div>
                             ) : null}

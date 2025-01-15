@@ -413,14 +413,14 @@ const TakeJambQuiz = () => {
                                     Continue where you left off:
                                 </h3>
                                 <div className="space-y-4">
-                                    {incompleteTests.map((test) => {
+                                    {incompleteTests.map((test, index) => {
                                         // Extract unique subjects using a Set
                                         const uniqueSubjects = Array.from(
                                             new Set(test.answers.map((answer) => answer.question.subject))
                                         );
 
                                         // Calculate progress
-                                        const totalQuestions = 40; // Assuming 40 questions in total
+                                        const totalQuestions = 40// Dynamically get the total number of questions
                                         const answeredQuestions = test.answers.length; // Number of answered questions
                                         const progressPercentage = (answeredQuestions / totalQuestions) * 100;
 
@@ -428,7 +428,7 @@ const TakeJambQuiz = () => {
                                             <div key={test.test_id} className="flex flex-col border-b py-4">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <div>
-                                                        <h4 className="text-md font-semibold text-gray-800">{`Study ${test.test_id}`}</h4>
+                                                        <h4 className="text-md font-semibold text-gray-800">{`Study ${index + 1}`}</h4> {/* Display index + 1 */}
                                                         <span className="text-sm text-gray-600">
                                                             Subjects: {uniqueSubjects.join(", ")}
                                                         </span>
@@ -455,6 +455,7 @@ const TakeJambQuiz = () => {
                                         );
                                     })}
                                 </div>
+
                             </div>
                         </div>
                     )}

@@ -416,14 +416,15 @@ const ExamPage = () => {
         await saveUnansweredQuestions(); // Save unanswered questions
         const formattedAnswers = currentSubjectQuestions.map((question) => {
             const selectedOption = selectedAnswers[question.id];
-            const isCorrect = selectedOption === question.correctAnswer ? 1 : 0;
-
+            const correctMap = { 0: "1", 1: "2", 2: "3", 3: "4" };
+            const optionsMap = { 0: "A", 1: "B", 2: "C", 3: "D" };
+            const isCorrect = correctMap[selectedOption] === question.correctAnswer ? 1 : 0;
             return {
                 user_answer_id: question.id,
                 user_id: user_id,
                 question_id: question.id,
                 test_id: test_id,
-                selected_option: selectedOption,
+                selected_option: optionsMap[selectedOption],
                 is_correct: isCorrect,
                 mode: mode,
                 createdAt: new Date().toISOString(),
