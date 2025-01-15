@@ -4,6 +4,9 @@ import { IoIosAlarm } from "react-icons/io";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuiz } from "../../utils/api/Redux/QuizContext";
 import { API_BASE_URL } from "../../config/apiConfig";
+import { MathJax, MathJaxContext } from "better-react-mathjax";
+import "katex/dist/katex.min.css";
+
 
 const Navbar = () => (
     <nav className="bg-[#2148C0] shadow-md px-6 py-4 flex items-center justify-between">
@@ -102,7 +105,7 @@ const ConfirmModal = ({ onCancel, onConfirm }) => (
 );
 
 const QuestionCard = ({ question, options, currentAnswer, onOptionSelect }) => (
-    <div className="bg-gray-50 p-6 rounded-lg shadow-md overflow-y-auto">
+    <div className="bg-gray-50 p-6 rounded-lg shadow-md overflow-auto">
         <h3
             className="text-lg font-semibold mb-4"
             dangerouslySetInnerHTML={{ __html: question }}
@@ -509,8 +512,8 @@ const ExamPage = () => {
                 </button>
 
             </div>
-            <div className="flex flex-grow">
-                <main className="flex-1 p-6">
+            <div className="flex flex-grow  ">
+                <main className="flex-1 p-6 overflow-auto">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold">
                             {currentSubject} - Question {currentQuestionIndex + 1} / {totalQuestions}
