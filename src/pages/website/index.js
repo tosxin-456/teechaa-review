@@ -65,7 +65,7 @@ const HomePage = () => {
             </nav>
 
             {/* Hero Section */}
-            <section id="home" className="h-screen mt-[200px] md:mt-0 flex flex-col justify-center items-center bg-white text-black text-center space-y-8">
+            <section id="home" className="h-screen mt-[200px] md:mt-2 flex flex-col justify-center items-center bg-white text-black text-center space-y-8">
                 <div className="container mx-auto flex flex-col md:flex-row items-center justify-between px-6 space-y-6 md:space-y-0">
                     <div className="text-center md:text-left">
                         <h1 className="text-6xl font-extrabold animate__animated animate__fadeIn">
