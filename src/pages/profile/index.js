@@ -198,6 +198,31 @@ const StudentProfilePage = () => {
         }
     };
 
+    const handleDeleteImage = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/users/profile-image/${userId}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to delete profile image");
+            }
+
+            const result = await response.json();
+            alert(result.message || "Profile image deleted successfully.");
+
+            // Clear the profile image preview
+            setProfileImagePreview(null);
+
+            closeModal(); // Close modal after success
+        } catch (error) {
+            console.error("Error deleting profile image:", error.message);
+            alert(error.message || "Failed to delete profile image.");
+        }
+    };
+
+
     // Navigate back
     const goBack = () => {
         navigate(-1);
@@ -320,31 +345,55 @@ const StudentProfilePage = () => {
                     <div className="bg-white rounded-lg shadow-lg p-6 w-96">
                         <h2 className="text-xl font-semibold text-center mb-4">Upload Profile Image</h2>
                         <div className="flex flex-col items-center">
-                            {profileImagePreview && (
+                            {/* Profile Image Preview */}
+                            {profileImagePreview ? (
                                 <img
                                     src={profileImagePreview}
                                     alt="Preview"
-                                    className="w-32 h-32 rounded-full object-cover mb-4"
+                                    className="w-32 h-32 rounded-full object-cover mb-4 border border-gray-300"
                                 />
+                            ) : (
+                                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-4 border border-gray-300">
+                                    <span className="text-gray-500">No Image</span>
+                                </div>
                             )}
+
+                            {/* Upload Input */}
+                            <label
+                                htmlFor="profileImageInput"
+                                className="flex items-center justify-center bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 cursor-pointer transition"
+                            >
+                                <i className="fas fa-upload mr-2"></i> Choose Image
+                            </label>
                             <input
+                                id="profileImageInput"
                                 type="file"
                                 accept="image/*"
                                 onChange={handleImageChange}
-                                className="mb-4"
+                                className="hidden"
                             />
-                            <div className="flex justify-center gap-4">
+
+                            {/* Action Buttons */}
+                            <div className="flex justify-center gap-4 mt-4">
                                 <button
                                     onClick={handleImageUpdate}
-                                    className="bg-[#2148C0] text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 transition"
+                                    className="bg-green-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-green-600 transition"
                                 >
-                                    Upload
+                                    <i className="fas fa-check mr-2"></i> Upload
                                 </button>
+                                {profileImagePreview && (
+                                    <button
+                                        onClick={handleDeleteImage}
+                                        className="bg-red-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-red-600 transition"
+                                    >
+                                        <i className="fas fa-trash-alt mr-2"></i> Delete
+                                    </button>
+                                )}
                                 <button
                                     onClick={closeModal}
                                     className="bg-gray-300 text-gray-800 px-4 py-2 rounded-md shadow-md hover:bg-gray-400 transition"
                                 >
-                                    Cancel
+                                    <i className="fas fa-times mr-2"></i> Cancel
                                 </button>
                             </div>
                         </div>

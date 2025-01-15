@@ -22,6 +22,7 @@ import { QuizProvider } from "./utils/api/Redux/QuizContext";
 import ExamHistory from "./pages/exam_history";
 import OTPResetPage from "./pages/otpRestPass";
 import { SessionExpirationPopup } from "./components/sessionExpiredPopup";
+import HomePage from "./pages/website";
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/otp" element={<OTPPage />} />

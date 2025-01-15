@@ -28,7 +28,7 @@ export const SessionExpirationPopup = () => {
 
         // Avoid showing the popup on specific routes
         if (
-            ["/login", "/register", "/", "/forgot-password", "/otp", "/reset-password", "/reset-otp"].includes(location.pathname) // Check the current route
+            ["/login", "/register", "/", "/forgot-password", "/otp", "/reset-password", "/reset-otp", "/signup"].includes(location.pathname) // Check the current route
         ) {
             setShowPopup(false);
             return;
