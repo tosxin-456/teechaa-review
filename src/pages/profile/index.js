@@ -110,9 +110,6 @@ const StudentProfilePage = () => {
 
             const response = await fetch(`${API_BASE_URL}/api/users/profile-image/${userId}`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: formData,
             });
 
@@ -169,6 +166,7 @@ const StudentProfilePage = () => {
             };
             setStudent(filteredData);
             alert("User details updated successfully!");
+            setIsEditing(false)
         } catch (error) {
             console.error("Error updating user details:", error.message);
         }
