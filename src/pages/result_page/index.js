@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -6,6 +6,7 @@ const ResultPage = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedSubject, setSelectedSubject] = useState("All");
+    const renderTimeout = useRef(null);
     const navigate = useNavigate();
     const { state } = useLocation();
     const { result } = state || [];
@@ -25,12 +26,14 @@ const ResultPage = () => {
         if (currentQuestionIndex < totalQuestions - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
+        window.MathJax.typesetClear();
     };
 
     const handleBack = () => {
         if (currentQuestionIndex > 0) {
             setCurrentQuestionIndex(currentQuestionIndex - 1);
         }
+        window.MathJax.typesetClear();
     };
 
     const toggleSidebar = () => {
@@ -40,8 +43,21 @@ const ResultPage = () => {
     const handleSubjectChange = (subject) => {
         setSelectedSubject(subject);
         setCurrentQuestionIndex(0);
+        if (window.MathJax) {
+            window.MathJax.typesetClear(); // Clear MathJax before updating
+        }
     };
 
+    useEffect(() => {
+        clearTimeout(renderTimeout.current);
+        renderTimeout.current = setTimeout(() => {
+            if (window.MathJax) {
+                window.MathJax.typesetPromise()
+                    .then(() => console.log('MathJax rendered successfully'))
+                    .catch((err) => console.error('MathJax render error:', err));
+            }
+        }, 300); // Adjust debounce time as needed
+    }, [currentQuestionIndex, selectedSubject, currentQuestion]);
 
     const goBack = () => {
         navigate('/result-checker');
@@ -49,9 +65,12 @@ const ResultPage = () => {
 
     useEffect(() => {
         if (window.MathJax) {
-            window.MathJax.typesetPromise();
+            window.MathJax.typesetPromise()
+                .then(() => console.log('MathJax rendered successfully'))
+                .catch((err) => console.error('MathJax render error:', err));
         }
-    }, [currentQuestionIndex, selectedSubject]);
+    }, [currentQuestionIndex, selectedSubject, currentQuestion]);
+
     console.log(selectedOption)
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-r from-gray-100 to-gray-200">
@@ -119,10 +138,10 @@ const ResultPage = () => {
                                     <div
                                         key={index}
                                         className={`p-4 rounded-lg shadow-md flex items-center justify-between border ${isOptionCorrect
-                                                ? "border-green-500 bg-green-50" // Correct answer
-                                                : isOptionSelected
-                                                    ? "border-red-500 bg-red-50" // Incorrect answer
-                                                    : "border-gray-300" // Neutral
+                                            ? "border-green-500 bg-green-50" // Correct answer
+                                            : isOptionSelected
+                                                ? "border-red-500 bg-red-50" // Incorrect answer
+                                                : "border-gray-300" // Neutral
                                             }`}
                                     >
                                         <span>{option}. {optionValue}</span>
@@ -136,7 +155,7 @@ const ResultPage = () => {
                         </div>
 
                         {/* Unanswered Question Notice */}
-                        {selectedOption === undefined || selectedOption === null || selectedOption==="" ? (
+                        {selectedOption === undefined || selectedOption === null || selectedOption === "" ? (
                             <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
                                 <h4 className="font-semibold text-yellow-600">
                                     Question Not Answered
@@ -146,7 +165,7 @@ const ResultPage = () => {
                         ) : null}
 
                         {/* Explanation */}
-                        <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                        <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg overflow-auto ">
                             <h4 className="font-semibold text-[#2148C0]">Explanation:</h4>
                             <p>{currentQuestion.explanation}</p>
                         </div>

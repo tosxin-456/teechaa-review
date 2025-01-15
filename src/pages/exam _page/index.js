@@ -158,6 +158,20 @@ const ExamPage = () => {
         setSelectedAnswers(initialAnswers);
     }, [quizData]);
 
+    useEffect(() => {
+        if (window.MathJax) {
+            window.MathJax.typesetClear(); // Clear any previous MathJax rendering
+            window.MathJax.typesetPromise()
+                .then(() => {
+                    console.log("MathJax successfully updated for the new question.");
+                })
+                .catch((err) => {
+                    console.error("Error updating MathJax:", err);
+                });
+        }
+    }, [currentQuestionIndex, currentSubject]);
+
+
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const user = JSON.parse(localStorage.getItem("user"));
@@ -335,8 +349,14 @@ const ExamPage = () => {
             try {
                 // Check if the answer already exists
                 const response = await fetch(
-                    `${API_BASE_URL}/api/answer/update/${user_id}/${currentQuestionId}/${test_id}/${mode}`
-                );
+                    `${API_BASE_URL}/api/answer/update/${user_id}/${currentQuestionId}/${test_id}/${mode}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
+                });
+
                 const data = await response.json();
 
                 if (data.success && data.answerExists) {
