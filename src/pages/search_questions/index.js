@@ -69,7 +69,7 @@ const SearchQuestions = () => {
             setResults(data);
         } catch (error) {
             console.error("Error during search:", error);
-            setError("Failed to fetch search results. Please try again later.");
+            setError("Result not found");
         } finally {
             setLoading(false);
         }
