@@ -110,7 +110,7 @@ const ProgressReport = () => {
 
 
     if (examData.length === 0) {
-        return <div>No progress data available for this user.</div>;
+        return <div  >No progress data available for this user.</div>;
     }
 
 

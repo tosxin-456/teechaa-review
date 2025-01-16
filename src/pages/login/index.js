@@ -11,6 +11,9 @@ const LoginPage = () => {
         password: "",
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+
     const navigate = useNavigate();
 
     const togglePassword = () => setShowPassword(!showPassword);
@@ -25,7 +28,7 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        setIsLoading(true)
         const { email, password } = formData;
 
         if (!email || !password) {
@@ -46,6 +49,7 @@ const LoginPage = () => {
             });
 
             if (response.ok) {
+                setIsLoading(false)
                 const responseData = await response.json();
                 const { token, user } = responseData; // Assuming only token is returned on successful login
 
@@ -58,11 +62,14 @@ const LoginPage = () => {
                 // Redirect to the dashboard
                 navigate(`/dashboard`);
             } else {
+                setIsLoading(false)
                 const result = await response.json();
                 console.log("Error response:", result);
                 toast.error(result.message || "Login failed.");
+                setError(result.message)
             }
         } catch (error) {
+            setIsLoading(false)
             console.error("Login error:", error);
             toast.error("An error occurred. Please try again.");
         }
@@ -125,15 +132,38 @@ const LoginPage = () => {
                             type="submit"
                             className="w-full bg-white text-[#2148C0] p-2 rounded-lg hover:bg-gray-200 transition duration-300"
                         >
-                            LOGIN
+                            {isLoading ? (
+                                <svg
+                                    className="animate-spin h-5 w-5 text-[#2148C0] m-auto "
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                    ></path>
+                                </svg>
+                            ) : (
+                                "LOGIN"
+                            )}
                         </button>
                     </form>
-                    <span onClick={() => navigate('/forgot-password')} className="w-full text-end mt-2 hover:cursor-pointer ">
+                    <p className="m-auto text-red-800 mt-1 " >{error}</p>
+                    <span onClick={() => navigate('/forgot-password')} className="w-full text-end mt-1 hover:cursor-pointer ">
                         <a className="text-white hover:underline">
                             Forgot Password?
                         </a>
                     </span>
-
                     {/* Extra Info */}
                     <p className="mt-4 text-center text-gray-400">
                         Don't have an account?{" "}

@@ -18,12 +18,12 @@ const SignupPage = () => {
         password: "",
         confirmPassword: "",
     });
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate()
-    // Handle input change
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -49,7 +49,7 @@ const SignupPage = () => {
             return;
         }
         console.log(formData)
-
+        setLoading(true)
         try {
             const { firstName, lastName, email, phoneNumber, password, gender } = formData;
             const response = await fetch(`${API_BASE_URL}/api/users/register`, {
@@ -62,6 +62,7 @@ const SignupPage = () => {
 
             // Check if the response is ok
             if (response.ok) {
+                setLoading(false)
                 const responseData = await response.json();
                 const { user_id } = responseData;
                 toast.success("User registered successfully");
@@ -69,15 +70,19 @@ const SignupPage = () => {
 
                 navigate(`/otp`);
             } else {
+                setLoading(false)
                 // If the response is not ok, log the response status and body
                 const result = await response.json();
                 console.log("Error response:", result);
                 toast.error(result.message || "Registration failed.");
+                setError(result.message)
             }
         } catch (error) {
+            setLoading(false)
             // Catch any unexpected errors
             console.error("Registration error:", error);
             toast.error("An unexpected error occurred.");
+            setError("Check your internet connection")
         }
     };
 
@@ -209,10 +214,33 @@ const SignupPage = () => {
                             type="submit"
                             className="w-full bg-white text-[#2148C0] p-2 rounded-lg hover:bg-gray-200 transition duration-300"
                         >
-                            Sign Up
+                            {isLoading ? (
+                                <svg
+                                    className="animate-spin h-5 w-5 text-[#2148C0] m-auto "
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                    ></path>
+                                </svg>
+                            ) : (
+                                "Sign Up"
+                            )}
                         </button>
                     </form>
-
+                    <p className="m-auto text-red-800 mt-1 " >{error}</p>
                     {/* Extra Info */}
                     <p className="mt-4 text-center text-gray-400">
                         Already have an account?{" "}
