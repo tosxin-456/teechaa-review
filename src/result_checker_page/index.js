@@ -38,7 +38,7 @@ const ResultCheckerPage = () => {
     }).length;
 
     const scorePercentage = Math.min((correctAnswersCount / totalQuestions) * 100, 50);
-    console.log(scorePercentage);
+    // console.log(scorePercentage);
 
     useEffect(() => {
         const handleResize = () => {

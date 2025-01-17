@@ -7,7 +7,7 @@ export const handleTogglePassword = (showPassword, setShowPassword) => {
 
 
 export const createUser = async (data) => {
-  console.log(data)
+  // console.log(data)
   try {
     const { firstName, lastName, email, phoneNumber, password, gender } = data;
 

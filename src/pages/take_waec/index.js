@@ -68,7 +68,7 @@ const TakeWaecQuiz = () => {
 
                 // console.log(jambTests);
                 setIncompleteTests(jambTests);
-                console.log(jambTests)
+                // console.log(jambTests)
             } catch (error) {
                 console.error("Error fetching questions:", error.message);
             }

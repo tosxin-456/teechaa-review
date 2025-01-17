@@ -65,7 +65,7 @@ const StudentProfilePage = () => {
                 };
 
                 setStudent(filteredData);
-                console.log(filteredData)
+                // console.log(filteredData)
                 setFormData(filteredData);
                 if (userData.profile_image) {
                     setProfileImagePreview(userData.profile_image); // Use the URL from the server
