@@ -144,16 +144,22 @@ const SignupPage = () => {
                         {/* Phone Number */}
                         <div>
                             <PhoneInput
-                                country={"ng"}
+                                country={"ng"} // Set default country to Nigeria
                                 value={formData.phoneNumber}
-                                onChange={handlePhoneChange}
+                                onChange={(value) => {
+                                    // Ensure the number always starts with "+234"
+                                    if (!value.startsWith("+234")) {
+                                        value = "+234" + value.replace(/^\+?\d*/, ""); // Add country code if missing
+                                    }
+                                    handlePhoneChange(value); // Update the form state
+                                }}
                                 inputClass="!w-full !mt-1 !p-2 !border !rounded-lg !bg-transparent !text-white !placeholder-white"
                                 containerClass="text-white"
+                                disableDropdown // Remove the dropdown for other countries
                                 required
-                                disableDropdown
-                                disableCountryCode
                             />
                         </div>
+
 
                         {/* Gender */}
                         <div>
