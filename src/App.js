@@ -31,10 +31,9 @@ function App() {
         <Router>
           <SessionExpirationPopup/>
           <Routes>
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<HomePage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/otp" element={<OTPPage />} />
@@ -52,6 +51,7 @@ function App() {
             <Route path="/exam" element={<ExamPage />} />
             <Route path="/results" element={<Results2Page />} />
             <Route path="/exam-history" element={<ExamHistory />} />
+            <Route path="*" element={<NotFound />} /> {/* Wildcard route moved to the end */}
           </Routes>
         </Router>
       </div>

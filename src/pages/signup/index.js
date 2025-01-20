@@ -144,12 +144,14 @@ const SignupPage = () => {
                         {/* Phone Number */}
                         <div>
                             <PhoneInput
-                                country={"us"}
+                                country={"ng"}
                                 value={formData.phoneNumber}
                                 onChange={handlePhoneChange}
                                 inputClass="!w-full !mt-1 !p-2 !border !rounded-lg !bg-transparent !text-white !placeholder-white"
                                 containerClass="text-white"
                                 required
+                                disableDropdown
+                                disableCountryCode
                             />
                         </div>
 
