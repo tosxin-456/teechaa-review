@@ -409,19 +409,15 @@ const TakeWaecQuiz = () => {
                                 </h3>
                                 <div className="space-y-4">
                                     {incompleteTests.map((test, index) => {
-                                        // Extract unique subjects using a Set
                                         const uniqueSubjects = Array.from(
                                             new Set(test.answers.map((answer) => answer.question.subject))
                                         );
-
-                                        // Calculate the total questions, capping at 40 per subject
                                         const totalQuestions = uniqueSubjects.reduce((total, subject) => {
                                             const subjectQuestions = quizData.filter((q) => q.subject === subject);
-                                            return total + Math.min(subjectQuestions.length, 50); // Add up to 40 questions per subject
+                                            return total + Math.min(subjectQuestions.length, 50); 
                                         }, 0);
 
-                                        // Calculate progress
-                                        const answeredQuestions = test.answers.length; // Number of answered questions
+                                        const answeredQuestions = test.answers.length; 
                                         const progressPercentage = totalQuestions
                                             ? (answeredQuestions / totalQuestions) * 100
                                             : 0;
