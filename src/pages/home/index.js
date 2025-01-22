@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     FaSignOutAlt,
     FaUser,
@@ -12,6 +12,8 @@ import {
 } from "react-icons/fa"; // Icons
 import Carousel from "../../components/dashboardCarousel";
 import { useNavigate } from "react-router-dom"; // Import useNavigate hook
+import WOW from "wowjs";
+import "animate.css";
 
 const Dashboard = () => {
     const navigate = useNavigate(); // Initialize navigate function
@@ -21,7 +23,7 @@ const Dashboard = () => {
         { id: 2, title: "Take WAEC", description: "Ace your WAEC exam with our extensive study materials and practice tests.", icon: <FaClipboardCheck color="#2148C0" />, path: "/take-waec" },
         { id: 3, title: "Questions Search", description: "Find detailed questions and answers for exams.", icon: <FaQuestionCircle color="#2148C0" />, path: "/search-questions" },
         { id: 4, title: "Progress Report", description: "Track your progress and performance.", icon: <FaChartLine color="#2148C0" />, path: "/progress-report" },
-        { id: 5, title: "Exam History", description: "Stay updated on your exams history", icon: <FaHistory color="#2148C0" />, path: "/exam-history"},
+        { id: 5, title: "Exam History", description: "Stay updated on your exams history", icon: <FaHistory color="#2148C0" />, path: "/exam-history" },
         { id: 6, title: "Result Checker", description: "Check your results instantly.", icon: <FaClipboardCheck color="#2148C0" />, path: "/result-checker" },
     ];
 
@@ -32,6 +34,16 @@ const Dashboard = () => {
         navigate('/');
     };
 
+    useEffect(() => {
+        new WOW.WOW({
+            live: true,
+            boxClass: "wow", // Adjusts class name for animation
+            animateClass: "animate__animated", // Adjusts animation class
+            offset: 0, // Determines the trigger point for animations
+            mobile: true, // Enable animation on mobile devices
+            duration: 2, // Makes the animation duration slower (default is 1)
+        }).init();
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col bg-white shadow-md ">
@@ -60,29 +72,29 @@ const Dashboard = () => {
                 </div>
             </header>
 
-
             {/* Main Content */}
             <main className="flex-grow container mx-auto px-4 py-4 lg:py-6">
                 {/* Welcome Section */}
-                <div className="text-center mb-4 lg:mb-6">
+                <div className="text-center mb-4 lg:mb-6 wow animate__fadeInLeft">
                     <h2 className="text-2xl lg:text-3xl font-bold text-[#2148C0] mb-2">Welcome Back, <span className="text-gray-600" >{user?.firstName}</span>!</h2>
                     <p className="text-gray-600">Explore the features below and get started.</p>
                 </div>
 
                 {/* Flex Container for Carousel and Sections */}
-                <div className="flex flex-col rounded-md md:w-[80%] md:m-auto lg:flex-row-reverse md:p-2 lg:items-start lg:justify-center ">
+                <div className="flex flex-col rounded-md md:w-[80%] md:m-auto lg:flex-row-reverse md:p-2 lg:items-start lg:justify-center wow animate__fadeInUp">
                     {/* Carousel */}
                     <div className="lg:w-[40%] mb-4 lg:mb-0">
                         <Carousel />
                     </div>
 
                     {/* Sections Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 lg:w-[60%] hover:cursor-pointer ">
-                        {sections.map((section) => (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 lg:w-[60%] hover:cursor-pointer">
+                        {sections.map((section, index) => (
                             <div
                                 key={section.id}
                                 onClick={() => navigate(section.path)} // Navigate to the specified path
-                                className="bg-white text-[#2148C0] p-3 rounded-lg shadow-md hover:shadow-lg transition transform hover:scale-105 flex flex-col justify-between"
+                                className="bg-white text-[#2148C0] p-3 rounded-lg shadow-md hover:shadow-lg transition transform hover:scale-105 flex flex-col justify-between wow animate__fadeInUp"
+                                data-wow-delay={`${index * 0.3}s`} // Sequential delay
                             >
                                 <div className="flex items-center mb-2">
                                     <div className="text-white text-xl lg:text-xl mr-2">

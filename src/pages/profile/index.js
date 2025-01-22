@@ -4,6 +4,8 @@ import { FaEdit, FaTrash, FaCamera, FaArrowLeft } from "react-icons/fa";
 import bg from "../../assets/first_bg.png"; // background image
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiConfig";
+import WOW from "wowjs";
+import "animate.css";
 
 const StudentProfilePage = () => {
     const user = JSON.parse(localStorage.getItem("user"));

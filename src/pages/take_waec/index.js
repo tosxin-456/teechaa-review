@@ -109,7 +109,7 @@ const TakeWaecQuiz = () => {
             if (mode === "exam") {
                 const randomQuestions = allQuestions
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, Math.min(40, allQuestions.length));
+                    .slice(0, Math.min(50, allQuestions.length));
                 console.log(`Exam Questions for Subject ${subject_id}:`, randomQuestions);
                 return randomQuestions;
             } else if (mode === "study") {
@@ -119,7 +119,7 @@ const TakeWaecQuiz = () => {
                     : [];
                 const limitedQuestions = yearFilteredQuestions
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, Math.min(40, yearFilteredQuestions.length));
+                    .slice(0, Math.min(50, yearFilteredQuestions.length));
                 console.log(`Study Questions for Subject ${subject_id}:`, limitedQuestions);
                 return limitedQuestions;
             }
@@ -144,47 +144,50 @@ const TakeWaecQuiz = () => {
         console.log("Incomplete Tests Data:", incompleteTests);
 
         const testId = incompleteTests[0]?.test_id;
-        const mode = incompleteTests[0]?.answers[0]?.mode
-        // console.log(mode)
+        const mode = incompleteTests[0]?.answers[0]?.mode;
+
         if (!testId) {
             console.error("Test ID is not available");
             return;
         }
 
-        const selectedSubjects = incompleteTests.flatMap((test) =>
-            test.answers.map((answer) => answer.question.subject_id)
+        // Extract selected subjects and incomplete question IDs
+        const selectedSubjects = Array.from(
+            new Set(incompleteTests.flatMap((test) => test.answers.map((answer) => answer.question.subject_id)))
         );
 
-        // Collect already answered question IDs
         const incompleteQuestionIds = new Set(
             incompleteTests.flatMap((test) => test.answers.map((answer) => answer.question.id))
         );
 
-        // Fetch remaining questions for selected subjects
-        const selectedQuizData = selectedSubjects.flatMap((subject_id) =>
-            quizData.filter((q) => q.subject_id === subject_id && !incompleteQuestionIds.has(q.id))
-        );
-
         // Include previously answered questions
-        let totalQuestions = incompleteTests.flatMap((test) =>
+        const answeredQuestions = incompleteTests.flatMap((test) =>
             test.answers.map((answer) => ({
                 ...answer.question,
                 selectedOption: answer.selected_option || null,
             }))
         );
 
-        const remainingQuestionsToSelect = 40 - totalQuestions.length;
-        if (remainingQuestionsToSelect > 0) {
-            const additionalQuestions = selectedQuizData
-                .sort(() => Math.random() - 0.5)
-                .slice(0, remainingQuestionsToSelect)
-                .map((question) => ({
-                    ...question,
-                    selectedOption: null,
-                }));
+        // Collect total questions per subject
+        let totalQuestions = [...answeredQuestions];
 
-            totalQuestions = [...totalQuestions, ...additionalQuestions];
-        }
+        selectedSubjects.forEach((subject_id) => {
+            const subjectAnsweredQuestions = answeredQuestions.filter((q) => q.subject_id === subject_id);
+            const remainingQuestionsToSelect = Math.max(50 - subjectAnsweredQuestions.length, 0);
+
+            if (remainingQuestionsToSelect > 0) {
+                const additionalQuestions = quizData
+                    .filter((q) => q.subject_id === subject_id && !incompleteQuestionIds.has(q.id))
+                    .sort(() => Math.random() - 0.5) // Shuffle questions
+                    .slice(0, remainingQuestionsToSelect)
+                    .map((question) => ({
+                        ...question,
+                        selectedOption: null,
+                    }));
+
+                totalQuestions = [...totalQuestions, ...additionalQuestions];
+            }
+        });
 
         console.log("Final Quiz Data:", totalQuestions);
 
@@ -200,14 +203,6 @@ const TakeWaecQuiz = () => {
             },
         });
     };
-
-
-
-
-
-
-
-    // console.log(mode)
 
 
     const createTest = async () => {
@@ -419,10 +414,17 @@ const TakeWaecQuiz = () => {
                                             new Set(test.answers.map((answer) => answer.question.subject))
                                         );
 
+                                        // Calculate the total questions, capping at 40 per subject
+                                        const totalQuestions = uniqueSubjects.reduce((total, subject) => {
+                                            const subjectQuestions = quizData.filter((q) => q.subject === subject);
+                                            return total + Math.min(subjectQuestions.length, 50); // Add up to 40 questions per subject
+                                        }, 0);
+
                                         // Calculate progress
-                                        const totalQuestions = 40// Dynamically get the total number of questions
                                         const answeredQuestions = test.answers.length; // Number of answered questions
-                                        const progressPercentage = (answeredQuestions / totalQuestions) * 100;
+                                        const progressPercentage = totalQuestions
+                                            ? (answeredQuestions / totalQuestions) * 100
+                                            : 0;
 
                                         return (
                                             <div key={test.test_id} className="flex flex-col border-b py-4">
@@ -455,10 +457,11 @@ const TakeWaecQuiz = () => {
                                         );
                                     })}
                                 </div>
-
                             </div>
                         </div>
                     )}
+
+
 
                 </div>
             </div>
