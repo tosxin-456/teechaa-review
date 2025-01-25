@@ -113,7 +113,7 @@ const SearchQuestions = () => {
 
                 {/* Filter Form */}
                 <div className="bg-white p-8 rounded-xl shadow-xl max-w-4xl mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                         <div className="md:col-span-2 lg:col-span-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Search by Keywords</label>
                             <div className="relative">

@@ -13,12 +13,15 @@ import "tailwindcss/tailwind.css";
 import { API_BASE_URL } from "../../config/apiConfig";
 import { FaSearch, FaArrowLeft, FaSave, FaPrint } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { ClipLoader, RingLoader } from "react-spinners";
 const ExamHistory = () => {
     const [rawData, setRawData] = useState([]);
     const [loading, setLoading] = useState(true); // Loading state
     const navigate = useNavigate()
+
     useEffect(() => {
         const fetchUserResults = async () => {
+            setLoading(true)
             const user = JSON.parse(localStorage.getItem("user"));
             const userId = user?.user_id;
 
@@ -50,6 +53,15 @@ const ExamHistory = () => {
 
         fetchUserResults();
     }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <RingLoader color="#4A90E2" size={50} />
+                <p className="ml-4 text-blue-600 font-medium">Loading your progress...</p>
+            </div>
+        );
+    }
 
     const exams = rawData.reduce((result, item) => {
         const existingExam = result.find((exam) => exam.id === item.test_id);
@@ -91,6 +103,43 @@ const ExamHistory = () => {
     const goBack = () => {
         navigate(-1);
     };
+
+    if (exams.length === 0) {
+        return (
+            <div className="flex flex-col h-full min-h-screen">
+                <div className="flex items-center justify-between mb-6 px-4 py-2 bg-white shadow-sm">
+                    <button
+                        onClick={goBack}
+                        className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
+                    >
+                        <FaArrowLeft className="text-xl" />
+                        Back
+                    </button>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={handleSave}
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
+                        >
+                            <FaSave className="text-xl" />
+                            Save
+                        </button>
+                        <button
+                            onClick={handlePrint}
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
+                        >
+                            <FaPrint className="text-xl" />
+                            Print
+                        </button>
+                    </div>
+                </div>
+                <div className="flex items-center justify-center flex-grow bg-gray-100">
+                    <p className="text-lg font-medium text-gray-600">
+                        No exam history available for this user.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-8">

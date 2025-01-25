@@ -143,22 +143,23 @@ const SignupPage = () => {
 
                         {/* Phone Number */}
                         <div>
-                            <PhoneInput
-                                country={"ng"} // Set default country to Nigeria
+                            <input
+                                type="text"
                                 value={formData.phoneNumber}
-                                onChange={(value) => {
+                                placeholder="Enter Phone NUmber"
+                                onChange={(e) => {
+                                    let value = e.target.value;
                                     // Ensure the number always starts with "+234"
                                     if (!value.startsWith("+234")) {
                                         value = "+234" + value.replace(/^\+?\d*/, ""); // Add country code if missing
                                     }
                                     handlePhoneChange(value); // Update the form state
                                 }}
-                                inputClass="!w-full !mt-1 !p-2 !border !rounded-lg !bg-transparent !text-white !placeholder-white"
-                                containerClass="text-white"
-                                disableDropdown // Remove the dropdown for other countries
+                                className="!w-full !mt-1 !p-2 !border !rounded-lg !bg-transparent !text-white !placeholder-white"
                                 required
                             />
                         </div>
+
 
 
                         {/* Gender */}
@@ -248,7 +249,7 @@ const SignupPage = () => {
                             )}
                         </button>
                     </form>
-                    <p className="m-auto text-red-800 mt-1 " >{error}</p>
+                    <p className="m-auto text-orange-500 mt-1 " >{error}</p>
                     {/* Extra Info */}
                     <p className="mt-4 text-center text-gray-400">
                         Already have an account?{" "}

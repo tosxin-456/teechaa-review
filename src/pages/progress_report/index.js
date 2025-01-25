@@ -14,9 +14,8 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { API_BASE_URL } from "../../config/apiConfig";
-
+import { ClipLoader, RingLoader } from "react-spinners";
 const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7f50", "#d45087", "#2ca02c"];
-
 
 
 const ProgressReport = () => {
@@ -33,11 +32,12 @@ const ProgressReport = () => {
 
     useEffect(() => {
         const fetchUserResults = async () => {
+            setLoading(true);
             const user = JSON.parse(localStorage.getItem("user"));
             const userId = user?.user_id;
 
             if (!userId) {
-                // setError("User not logged in.");
+                // User not logged in, handle this case
                 return;
             }
 
@@ -46,10 +46,9 @@ const ProgressReport = () => {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`
-                    }
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                    },
                 });
-
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -57,17 +56,26 @@ const ProgressReport = () => {
                 }
 
                 const resultData = await response.json();
-                console.log(resultData)
+                console.log(resultData);
                 setRawData(resultData.data);
             } catch (error) {
                 console.error("Error fetching results:", error.message);
-                // setError("Failed to fetch user results.");
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchUserResults();
     }, []);
-    console.log(rawData)
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <RingLoader color="#4A90E2" size={50} />
+                <p className="ml-4 text-blue-600 font-medium">Loading your progress...</p>
+            </div>
+        );
+    }
 
     const examData = rawData.reduce((acc, entry) => {
         const { year, examType, subject } = entry.question;
@@ -106,14 +114,7 @@ const ProgressReport = () => {
     console.log(examData);
 
 
-    // console.log(examData);
-
-
-    if (examData.length === 0) {
-        return <div  >No progress data available for this user.</div>;
-    }
-
-
+    // console.log(examData)
 
     const filteredData = examData.filter((entry) => {
         return (
@@ -181,6 +182,44 @@ const ProgressReport = () => {
     const handlePrint = () => {
         window.print();
     };
+
+
+    if (examData.length === 0) {
+        return (
+            <div className="flex flex-col h-full min-h-screen">
+                <div className="flex items-center justify-between mb-6 px-4 py-2 bg-white shadow-sm">
+                    <button
+                        onClick={goBack}
+                        className="flex items-center gap-2 text-[#2148C0] hover:text-blue-600 font-medium transition"
+                    >
+                        <FaArrowLeft className="text-xl" />
+                        Back
+                    </button>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={handleSave}
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
+                        >
+                            <FaSave className="text-xl" />
+                            Save
+                        </button>
+                        <button
+                            onClick={handlePrint}
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
+                        >
+                            <FaPrint className="text-xl" />
+                            Print
+                        </button>
+                    </div>
+                </div>
+                <div className="flex items-center justify-center flex-grow bg-gray-100">
+                    <p className="text-lg font-medium text-gray-600">
+                        No progress data available for this user.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div>
