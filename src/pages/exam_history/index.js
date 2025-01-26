@@ -93,6 +93,8 @@ const ExamHistory = () => {
         return result;
     }, []);
 
+    console.log(exams)
+
     const handleSave = () => {
         // Logic to save the report as a file
         console.log("Save report functionality coming soon!");
@@ -150,7 +152,7 @@ const ExamHistory = () => {
 
     const formattedData = exams.map((exam) => ({
         ...exam,
-        score: ((exam.score / exam.totalQuestions) * 100).toFixed(0),
+        // score: ((exam.score / exam.totalQuestions) * 100).toFixed(0),
         date: new Date(exam.date).toLocaleDateString(undefined, {
             year: "numeric",
             month: "short",
@@ -234,7 +236,7 @@ const ExamHistory = () => {
                                             <th className="border border-gray-200 px-4 py-2">Date</th>
                                             <th className="border border-gray-200 px-4 py-2">Exam Type</th>
                                             <th className="border border-gray-200 px-4 py-2">Subjects</th>
-                                            <th className="border border-gray-200 px-4 py-2">Answered</th>
+                                            {/* <th className="border border-gray-200 px-4 py-2">Answered</th> */}
                                             <th className="border border-gray-200 px-4 py-2">Total</th>
                                             <th className="border border-gray-200 px-4 py-2">Score (%)</th>
                                         </tr>
@@ -257,14 +259,14 @@ const ExamHistory = () => {
                                                 <td className="border border-gray-200 px-4 py-2">
                                                     {exam.subjectCount}
                                                 </td>
-                                                <td className="border border-gray-200 px-4 py-2">
-                                                    {exam.score}
-                                                </td>
+                                                {/* <td className="border border-gray-200 px-4 py-2">
+                                                    {exam.correctAnswers}
+                                                </td> */}
                                                 <td className="border border-gray-200 px-4 py-2">
                                                     {exam.totalQuestions}
                                                 </td>
                                                 <td className="border border-gray-200 px-4 py-2">
-                                                    {((exam.score / exam.totalQuestions) * 100).toFixed(2)}%
+                                                    {(exam.score).toFixed(2)}%
                                                 </td>
                                             </tr>
                                         ))}

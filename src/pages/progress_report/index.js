@@ -474,7 +474,7 @@ const ProgressReport = () => {
                 </div>
 
                 <div className="mt-6 bg-white p-4 rounded-lg shadow-lg">
-                    <h2 className="text-xl font-bold text-gray-800 mb-4">Exam History</h2>
+                    <h2 className="text-xl font-bold text-gray-800 mb-4"> Subject Performance History</h2>
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
                             <thead>

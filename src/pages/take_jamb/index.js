@@ -173,7 +173,7 @@ const TakeJambQuiz = () => {
 
         selectedSubjects.forEach((subject_id) => {
             const subjectAnsweredQuestions = answeredQuestions.filter((q) => q.subject_id === subject_id);
-            const remainingQuestionsToSelect = Math.max(40 - subjectAnsweredQuestions.length, 0);
+            const remainingQuestionsToSelect = Math.max(5 - subjectAnsweredQuestions.length, 0);
 
             if (remainingQuestionsToSelect > 0) {
                 const additionalQuestions = quizData

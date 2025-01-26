@@ -109,7 +109,7 @@ const TakeWaecQuiz = () => {
             if (mode === "exam") {
                 const randomQuestions = allQuestions
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, Math.min(50, allQuestions.length));
+                    .slice(0, Math.min(5, allQuestions.length));
                 console.log(`Exam Questions for Subject ${subject_id}:`, randomQuestions);
                 return randomQuestions;
             } else if (mode === "study") {
@@ -119,7 +119,7 @@ const TakeWaecQuiz = () => {
                     : [];
                 const limitedQuestions = yearFilteredQuestions
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, Math.min(50, yearFilteredQuestions.length));
+                    .slice(0, Math.min(5, yearFilteredQuestions.length));
                 console.log(`Study Questions for Subject ${subject_id}:`, limitedQuestions);
                 return limitedQuestions;
             }
