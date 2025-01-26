@@ -104,7 +104,7 @@ const ResultPage = () => {
                 </div>
 
                 <div className="flex-grow flex flex-col-reverse sm:flex-row">
-                    <main className="flex-1 p-4 sm:p-6 bg-white shadow-lg rounded-lg mx-4 sm:mx-6">
+                    <main className="flex-1 p-4 sm:p-6 bg-white shadow-lg rounded-lg mx-4 sm:mx-6 overflow-auto ">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-lg sm:text-xl font-bold text-[#2148C0]">
                                 Question {currentQuestionIndex + 1} / {totalQuestions}
@@ -117,7 +117,7 @@ const ResultPage = () => {
                             </button>
                         </div>
 
-                        <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md">
+                        <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md ">
                             <h3 className="text-base sm:text-lg font-semibold mb-4 overflow-auto ">
                                 {renderWithMathJax(currentQuestion.question)}
                             </h3>
