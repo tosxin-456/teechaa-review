@@ -78,6 +78,8 @@ const ExamHistory = () => {
             });
         }
 
+
+
         const exam = result.find((exam) => exam.id === item.test_id);
         exam.totalQuestions += 1;
         exam.correctAnswers += item.is_correct ? 1 : 0;
@@ -141,6 +143,22 @@ const ExamHistory = () => {
         );
     }
 
+    const formatDate = (dateString) => {
+        const options = { year: "numeric", month: "long", day: "numeric" };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
+    const formattedData = exams.map((exam) => ({
+        ...exam,
+        score: ((exam.score / exam.totalQuestions) * 100).toFixed(0),
+        date: new Date(exam.date).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        }),
+    }));
+
+
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="flex items-center justify-between mb-6">
@@ -178,17 +196,20 @@ const ExamHistory = () => {
                     {/* Line Chart Section */}
                     <div className="bg-white rounded-lg shadow p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-600 mb-4">
-                            Performance Over Time
+                            Performance Over Time(%)
                         </h2>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart
-                                data={exams}
+                                data={formattedData}
                                 margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="date" tick={{ fill: "#374151" }} />
                                 <YAxis tick={{ fill: "#374151" }} domain={[0, 100]} />
-                                <Tooltip />
+                                <Tooltip
+                                    formatter={(value) => `${value}%`}
+                                    labelFormatter={(label) => `Date: ${label}`}
+                                />
                                 <Legend />
                                 <Line
                                     type="monotone"
@@ -205,45 +226,51 @@ const ExamHistory = () => {
                     <div className="bg-white rounded-lg shadow p-6">
                         <h2 className="text-xl font-semibold text-gray-600 mb-4">Exam Details</h2>
                         {exams.length > 0 ? (
-                            <table className="table-auto w-full border-collapse border border-gray-200">
-                                <thead>
-                                    <tr className="bg-gray-100 text-left">
-                                        <th className="border border-gray-200 px-4 py-2">Title</th>
-                                        <th className="border border-gray-200 px-4 py-2">Date</th>
-                                        <th className="border border-gray-200 px-4 py-2">Exam Type</th>
-                                        <th className="border border-gray-200 px-4 py-2">Subjects</th>
-                                        <th className="border border-gray-200 px-4 py-2">Questions</th>
-                                        <th className="border border-gray-200 px-4 py-2">Score</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {exams.map((exam) => (
-                                        <tr
-                                            key={exam.id}
-                                            className="hover:bg-gray-50 transition"
-                                        >
-                                            <td className="border border-gray-200 px-4 py-2">
-                                                {exam.title}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-2">
-                                                {exam.date}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-2">
-                                                {exam.examType}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-2">
-                                                {exam.subjectCount}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-2">
-                                                {exam.totalQuestions}
-                                            </td>
-                                            <td className="border border-gray-200 px-4 py-2">
-                                                {exam.score}%
-                                            </td>
+                            <div className="overflow-x-auto">
+                                <table className="table-auto w-full border-collapse border border-gray-200">
+                                    <thead>
+                                        <tr className="bg-gray-100 text-left">
+                                            <th className="border border-gray-200 px-4 py-2">Title</th>
+                                            <th className="border border-gray-200 px-4 py-2">Date</th>
+                                            <th className="border border-gray-200 px-4 py-2">Exam Type</th>
+                                            <th className="border border-gray-200 px-4 py-2">Subjects</th>
+                                            <th className="border border-gray-200 px-4 py-2">Answered</th>
+                                            <th className="border border-gray-200 px-4 py-2">Total</th>
+                                            <th className="border border-gray-200 px-4 py-2">Score (%)</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {exams.map((exam) => (
+                                            <tr
+                                                key={exam.id}
+                                                className="hover:bg-gray-50 transition"
+                                            >
+                                                <td className="border border-gray-200 px-4 py-2">
+                                                    {exam.id}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-2">
+                                                    {formatDate(exam.date)}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-2">
+                                                    {exam.examType}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-2">
+                                                    {exam.subjectCount}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-2">
+                                                    {exam.score}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-2">
+                                                    {exam.totalQuestions}
+                                                </td>
+                                                <td className="border border-gray-200 px-4 py-2">
+                                                    {((exam.score / exam.totalQuestions) * 100).toFixed(2)}%
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         ) : (
                             <p className="text-gray-500 text-center">No exams found.</p>
                         )}

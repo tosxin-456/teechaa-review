@@ -413,69 +413,50 @@ const TakeJambQuiz = () => {
                                     Continue where you left off:
                                 </h3>
                                 <div className="space-y-4">
-                                    {incompleteTests.length > 0 && (
-                                        <div className="mt-8">
-                                            <h2 className="text-xl font-semibold text-gray-700 mb-4">
-                                                Incomplete Studies
-                                            </h2>
-                                            <div className="bg-yellow-50 p-4 rounded-lg shadow-md">
-                                                <h3 className="font-semibold text-gray-800 mb-2">
-                                                    Continue where you left off:
-                                                </h3>
-                                                <div className="space-y-4">
-                                                    {incompleteTests.map((test, index) => {
-                                                        // Extract unique subjects using a Set
-                                                        const uniqueSubjects = Array.from(
-                                                            new Set(test.answers.map((answer) => answer.question.subject))
-                                                        );
+                                    {incompleteTests.map((test, index) => {
+                                        const uniqueSubjects = Array.from(
+                                            new Set(test.answers.map((answer) => answer.question.subject))
+                                        );
+                                        const totalQuestions = uniqueSubjects.reduce((total, subject) => {
+                                            const subjectQuestions = quizData.filter((q) => q.subject === subject);
+                                            return total + Math.min(subjectQuestions.length, 5);
+                                        }, 0);
 
-                                                        // Calculate the total questions, capping at 40 per subject
-                                                        const totalQuestions = uniqueSubjects.reduce((total, subject) => {
-                                                            const subjectQuestions = quizData.filter((q) => q.subject === subject);
-                                                            return total + Math.min(subjectQuestions.length, 40); // Add up to 40 questions per subject
-                                                        }, 0);
+                                        const answeredQuestions = test.answers.length;
+                                        const progressPercentage = totalQuestions
+                                            ? (answeredQuestions / totalQuestions) * 100
+                                            : 0;
 
-                                                        // Calculate progress
-                                                        const answeredQuestions = test.answers.length; // Number of answered questions
-                                                        const progressPercentage = totalQuestions
-                                                            ? (answeredQuestions / totalQuestions) * 100
-                                                            : 0;
-
-                                                        return (
-                                                            <div key={test.test_id} className="flex flex-col border-b py-4">
-                                                                <div className="flex items-center justify-between mb-2">
-                                                                    <div>
-                                                                        <h4 className="text-md font-semibold text-gray-800">{`Study ${index + 1}`}</h4> {/* Display index + 1 */}
-                                                                        <span className="text-sm text-gray-600">
-                                                                            Subjects: {uniqueSubjects.join(", ")}
-                                                                        </span>
-                                                                    </div>
-                                                                    <button
-                                                                        onClick={() => continueQuiz(test.test_id)}
-                                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                                                    >
-                                                                        Continue
-                                                                    </button>
-                                                                </div>
-
-                                                                {/* Progress Bar */}
-                                                                <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                                                                    <div
-                                                                        className="h-full bg-blue-500"
-                                                                        style={{ width: `${progressPercentage}%` }}
-                                                                    ></div>
-                                                                </div>
-                                                                <span className="text-sm text-gray-600 mt-1">
-                                                                    {answeredQuestions} out of {totalQuestions} questions answered
-                                                                </span>
-                                                            </div>
-                                                        );
-                                                    })}
+                                        return (
+                                            <div key={test.test_id} className="flex flex-col border-b py-4">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div>
+                                                        <h4 className="text-md font-semibold text-gray-800">{`Study ${index + 1}`}</h4> {/* Display index + 1 */}
+                                                        <span className="text-sm text-gray-600">
+                                                            Subjects: {uniqueSubjects.join(", ")}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => continueQuiz(test.test_id)}
+                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                    >
+                                                        Continue
+                                                    </button>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    )}
 
+                                                {/* Progress Bar */}
+                                                <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-blue-500"
+                                                        style={{ width: `${progressPercentage}%` }}
+                                                    ></div>
+                                                </div>
+                                                <span className="text-sm text-gray-600 mt-1">
+                                                    {answeredQuestions} out of {totalQuestions} questions answered
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

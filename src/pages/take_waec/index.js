@@ -414,7 +414,7 @@ const TakeWaecQuiz = () => {
                                         );
                                         const totalQuestions = uniqueSubjects.reduce((total, subject) => {
                                             const subjectQuestions = quizData.filter((q) => q.subject === subject);
-                                            return total + Math.min(subjectQuestions.length, 50); 
+                                            return total + Math.min(subjectQuestions.length, 5); 
                                         }, 0);
 
                                         const answeredQuestions = test.answers.length; 

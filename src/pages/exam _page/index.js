@@ -186,8 +186,8 @@ const ExamPage = () => {
 
     const saveUnansweredQuestions = async () => {
         try {
-            const unansweredQuestions = currentSubjectQuestions.filter((question) =>
-                selectedAnswers[question.id] === undefined
+            const unansweredQuestions = quizData.filter(
+                (question) => selectedAnswers[question.id] === undefined
             );
 
             const promises = unansweredQuestions.map((question) => {
@@ -452,9 +452,9 @@ const ExamPage = () => {
 
     const handleExit = async () => {
         if (mode === "exam") {
-            await saveUnansweredQuestions(); // Save unanswered questions
+            await saveUnansweredQuestions();
         }
-        navigate(-1); // Go back to the previous page
+        navigate(-1); 
         localStorage.removeItem("timeLeft"); // Remove the saved timeLeft from localStorage
     };
 

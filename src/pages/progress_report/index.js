@@ -71,7 +71,7 @@ const ProgressReport = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-100">
-                <RingLoader color="#4A90E2" size={50} />
+                <ClipLoader color="#4A90E2" size={50} />
                 <p className="ml-4 text-blue-600 font-medium">Loading your progress...</p>
             </div>
         );
@@ -79,6 +79,7 @@ const ProgressReport = () => {
 
     const examData = rawData.reduce((acc, entry) => {
         const { year, examType, subject } = entry.question;
+        const { test_id } = entry
         const isCorrect = entry.is_correct === 1;
         const createdAt = entry.createdAt;
         const mode = entry.mode;
@@ -111,7 +112,58 @@ const ProgressReport = () => {
         return acc;
     }, []);
 
-    console.log(examData);
+    const groupData = rawData.reduce((acc, entry) => {
+        const { year, examType, subject } = entry.question;
+        const { test_id } = entry;
+        const isCorrect = entry.is_correct === 1;
+        const createdAt = entry.createdAt;
+        const mode = entry.mode;
+
+        // Find or create the grouping by test_id and subject
+        let group = acc.find(
+            item => item.test_id === test_id && item.subject === subject
+        );
+
+        if (!group) {
+            group = {
+                test_id,         // Group by test_id
+                subject,         // Group by subject
+                year,
+                examType,
+                correct: 0,      // Correct answers count
+                totalQuestions: 0, // Total questions answered
+                incorrect: 0,    // Incorrect answers count
+                createdAt,
+                modes: [],       // Initialize modes array
+            };
+            acc.push(group);
+        }
+
+        // Increment total questions count
+        group.totalQuestions += 1;
+
+        // Increment correct or incorrect count
+        if (isCorrect) {
+            group.correct += 1;
+        } else {
+            group.incorrect += 1;
+        }
+
+        // Update createdAt to the earliest timestamp
+        if (new Date(createdAt) < new Date(group.createdAt)) {
+            group.createdAt = createdAt;
+        }
+
+        // Add mode if it's not already in the modes array
+        if (!group.modes.includes(mode)) {
+            group.modes.push(mode);
+        }
+
+        return acc;
+    }, []);
+
+
+    console.log(rawData);
 
 
     // console.log(examData)
@@ -169,10 +221,35 @@ const ProgressReport = () => {
         ? ((totalCorrect / (filteredData.length * 50)) * 100).toFixed(2)
         : 0;
 
-    const subjectAnalysis = donutChartData.map((entry) => ({
-        subject: entry.subject,
-        mean: (entry.value / filteredData.filter((data) => data.subject === entry.subject).length).toFixed(2),
+    const subjectAnalysis = rawData.reduce((acc, entry) => {
+        const { subject } = entry.question;
+        const isCorrect = entry.is_correct === 1;
+
+        // Find or create the grouping for subject
+        let group = acc.find(item => item.subject === subject);
+
+        if (!group) {
+            group = {
+                subject,
+                totalScore: 0,
+                totalCount: 0
+            };
+            acc.push(group);
+        }
+
+        // Increment score and count for the subject
+        group.totalScore += isCorrect ? 1 : 0; // Or use score if applicable
+        group.totalCount += 1;
+
+        return acc;
+    }, []);
+
+    // Calculate mean score for each subject
+    const subjectAnalysisWithMean = subjectAnalysis.map(item => ({
+        subject: item.subject,
+        mean: ((item.totalScore / item.totalCount) * 100).toFixed(1)
     }));
+
 
     const handleSave = () => {
         // Logic to save the report as a file
@@ -220,6 +297,8 @@ const ProgressReport = () => {
             </div>
         );
     }
+    
+    console.log(groupData)
 
     return (
         <div>
@@ -384,7 +463,7 @@ const ProgressReport = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {subjectAnalysis.map((item, index) => (
+                            {subjectAnalysisWithMean.map((item, index) => (
                                 <tr key={index}>
                                     <td className="border-b p-2">{item.subject}</td>
                                     <td className="border-b p-2">{item.mean}</td>
@@ -396,29 +475,41 @@ const ProgressReport = () => {
 
                 <div className="mt-6 bg-white p-4 rounded-lg shadow-lg">
                     <h2 className="text-xl font-bold text-gray-800 mb-4">Exam History</h2>
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr>
-                                <th className="border-b text-left p-2">Date</th>
-                                <th className="border-b text-left p-2">Subject</th>
-                                <th className="border-b text-left p-2">Score (%)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {examData.map((item, index) => (
-                                <tr key={index}>
-                                    <td className="border-b p-2">
-                                        {new Date(item.createdAt).toLocaleDateString()} {/* Formats the date */}
-                                    </td>
-                                    <td className="border-b p-2">{item.subject}</td>
-                                    <td className="border-b p-2">
-                                        {item.correct}%
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th className="border-b text-left p-2">Date</th>
+                                    <th className="border-b text-left p-2">Subject</th>
+                                    <th className="border-b text-left p-2">Correct</th>
+                                    <th className="border-b text-left p-2">Total</th>
+                                    <th className="border-b text-left p-2">Percentage (%)</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {groupData.map((item, index) => {
+                                    const percentage = ((item.correct / item.totalQuestions) * 100).toFixed(1);
+                                    return (
+                                        <tr key={index}>
+                                            <td className="border-b p-2">
+                                                {new Date(item.createdAt).toLocaleDateString("en-US", {
+                                                    year: "numeric",
+                                                    month: "short",
+                                                    day: "numeric",
+                                                })} {/* Formats the date to a readable format */}
+                                            </td>
+                                            <td className="border-b p-2">{item.subject}</td>
+                                            <td className="border-b p-2">{item.correct}</td>
+                                            <td className="border-b p-2">{item.totalQuestions}</td>
+                                            <td className="border-b p-2">{percentage}%</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
 
             </div>
             {/* Footer */}

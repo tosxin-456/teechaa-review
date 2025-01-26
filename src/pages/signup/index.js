@@ -40,6 +40,7 @@ const SignupPage = () => {
 
     // Handle form submission
     const handleSubmit = async (e) => {
+        setLoading(true)
         e.preventDefault();
         const { password, confirmPassword } = formData;
 
@@ -49,7 +50,6 @@ const SignupPage = () => {
             return;
         }
         console.log(formData)
-        setLoading(true)
         try {
             const { firstName, lastName, email, phoneNumber, password, gender } = formData;
             const response = await fetch(`${API_BASE_URL}/api/users/register`, {
@@ -223,7 +223,7 @@ const SignupPage = () => {
                             type="submit"
                             className="w-full bg-white text-[#2148C0] p-2 rounded-lg hover:bg-gray-200 transition duration-300"
                         >
-                            {isLoading ? (
+                            {loading ? (
                                 <svg
                                     className="animate-spin h-5 w-5 text-[#2148C0] m-auto "
                                     xmlns="http://www.w3.org/2000/svg"
