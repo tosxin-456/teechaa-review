@@ -158,7 +158,7 @@ const LoginPage = () => {
                             )}
                         </button>
                     </form>
-                    <p className="m-auto text-orange-500 mt-1 " >{error}</p>
+                    <p className="m-auto text-red-800 bg-white mt-2 " >{error}</p>
                     <span onClick={() => navigate('/forgot-password')} className="w-full text-end mt-1 hover:cursor-pointer ">
                         <a className="text-white hover:underline">
                             Forgot Password?

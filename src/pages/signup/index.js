@@ -249,7 +249,7 @@ const SignupPage = () => {
                             )}
                         </button>
                     </form>
-                    <p className="m-auto text-orange-500 mt-1 " >{error}</p>
+                    <p className="m-auto text-red-800 bg-white mt-2 " >{error}</p>
                     {/* Extra Info */}
                     <p className="mt-4 text-center text-gray-400">
                         Already have an account?{" "}
