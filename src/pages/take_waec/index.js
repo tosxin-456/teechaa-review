@@ -273,6 +273,29 @@ const TakeWaecQuiz = () => {
                         </div>
                     </div>
 
+                    {/* Modes */}
+                    <div className="mb-6">
+                        <h2 className="text-lg font-semibold text-gray-700 mb-4">Modes</h2>
+                        <div className="flex justify-around">
+                            <button
+                                onClick={() => setMode("study")}
+                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "study" ? "bg-blue-600 text-white" : "bg-gray-200"
+                                    }`}
+                            >
+                                <FaBook className="text-2xl mb-2" />
+                                <span>Study</span>
+                            </button>
+                            <button
+                                onClick={() => setMode("exam")}
+                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "exam" ? "bg-blue-600 text-white" : "bg-gray-200"
+                                    }`}
+                            >
+                                <FaPen className="text-2xl mb-2" />
+                                <span>Exam</span>
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Filters for Study Mode */}
                     {mode === "study" && (
                         <div className="mb-6">
@@ -325,61 +348,54 @@ const TakeWaecQuiz = () => {
                         </div>
                     )}
 
-                    {/* Modes */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-4">Modes</h2>
-                        <div className="flex justify-around">
-                            <button
-                                onClick={() => setMode("study")}
-                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "study" ? "bg-blue-600 text-white" : "bg-gray-200"
-                                    }`}
-                            >
-                                <FaBook className="text-2xl mb-2" />
-                                <span>Study</span>
-                            </button>
-                            <button
-                                onClick={() => setMode("exam")}
-                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "exam" ? "bg-blue-600 text-white" : "bg-gray-200"
-                                    }`}
-                            >
-                                <FaPen className="text-2xl mb-2" />
-                                <span>Exam</span>
-                            </button>
-                        </div>
-                    </div>
-
                     {/* Timer */}
                     {mode === "exam" && (
                         <div className="mb-6">
                             <h2 className="text-lg font-semibold text-gray-700 mb-4">Set Timer</h2>
                             <div className="flex items-center gap-4">
                                 <FaClock className="text-blue-600 text-2xl" />
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="2"
-                                    value={Math.floor(timeLeft / 3600)}
-                                    onChange={(e) => {
-                                        const hours = parseInt(e.target.value, 10) || 0;
-                                        setTimeLeft(hours * 3600 + (timeLeft % 3600));
-                                    }}
-                                    className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
-                                />
+
+                                <div className="flex flex-col items-center">
+                                    <label htmlFor="hours" className="text-sm text-gray-600 font-medium">
+                                        Hours
+                                    </label>
+                                    <input
+                                        id="hours"
+                                        type="number"
+                                        min="0"
+                                        max="2"
+                                        value={Math.floor(timeLeft / 3600)}
+                                        onChange={(e) => {
+                                            const hours = parseInt(e.target.value, 10) || 0;
+                                            setTimeLeft(hours * 3600 + (timeLeft % 3600));
+                                        }}
+                                        className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
+                                    />
+                                </div>
+
                                 <span className="text-lg font-bold">:</span>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="59"
-                                    value={Math.floor((timeLeft % 3600) / 60)}
-                                    onChange={(e) => {
-                                        const minutes = parseInt(e.target.value, 10) || 0;
-                                        setTimeLeft(
-                                            Math.floor(timeLeft / 3600) * 3600 + minutes * 60
-                                        );
-                                    }}
-                                    className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
-                                />
+
+                                <div className="flex flex-col items-center">
+                                    <label htmlFor="minutes" className="text-sm text-gray-600 font-medium">
+                                        Minutes
+                                    </label>
+                                    <input
+                                        id="minutes"
+                                        type="number"
+                                        min="0"
+                                        max="59"
+                                        value={Math.floor((timeLeft % 3600) / 60)}
+                                        onChange={(e) => {
+                                            const minutes = parseInt(e.target.value, 10) || 0;
+                                            setTimeLeft(
+                                                Math.floor(timeLeft / 3600) * 3600 + minutes * 60
+                                            );
+                                        }}
+                                        className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
+                                    />
+                                </div>
                             </div>
+
                         </div>
                     )}
 
@@ -414,10 +430,10 @@ const TakeWaecQuiz = () => {
                                         );
                                         const totalQuestions = uniqueSubjects.reduce((total, subject) => {
                                             const subjectQuestions = quizData.filter((q) => q.subject === subject);
-                                            return total + Math.min(subjectQuestions.length, 5); 
+                                            return total + Math.min(subjectQuestions.length, 5);
                                         }, 0);
 
-                                        const answeredQuestions = test.answers.length; 
+                                        const answeredQuestions = test.answers.length;
                                         const progressPercentage = totalQuestions
                                             ? (answeredQuestions / totalQuestions) * 100
                                             : 0;

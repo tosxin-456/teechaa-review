@@ -68,8 +68,8 @@ const HomePage = () => {
             <section id="home" className="h-screen mt-[200px] md:mt-2 flex flex-col justify-center items-center bg-white text-black text-center space-y-8">
                 <div className="container mx-auto flex flex-col md:flex-row items-center justify-between px-6 space-y-6 md:space-y-0">
                     <div className="text-center md:text-left">
-                        <h1 className="text-6xl font-extrabold animate__animated animate__fadeIn">
-                            Take student <br /> experience to the next level
+                        <h1 className="text-6xl mt-7 md:mt-0 font-extrabold animate__animated animate__fadeIn">
+                            Take your student <br /> experience to the next level
                         </h1>
                         <p className="text-lg max-w-xl mx-auto leading-relaxed animate__animated animate__fadeIn animate__delay-1s md:mx-0">
                             Ace your exams with expertly curated study materials, past questions, and tutorials tailored for success in JAMB, WAEC, and more!
@@ -88,10 +88,10 @@ const HomePage = () => {
             </section>
 
             {/* Success Rate Section */}
-            <section className="py-24 bg-gray-100 mt-7 md:mt-0 text-center">
+            <section className="py-24 bg-gray-100 mt-20 md:mt-0 text-center">
                 <h2 className="text-5xl font-bold text-[#2148C0] mb-8">Our Success Rate</h2>
                 <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    Join over <span className="text-[#2148C0] font-bold">10,000 students</span> who have excelled in their exams with our platform. Achieve more and stress less with TeeChaa.
+                    Join over <span className="text-[#2148C0] font-bold">1,000 students</span> who have excelled in their exams with our platform. Achieve more and stress less with TeeChaa.
                 </p>
             </section>
 

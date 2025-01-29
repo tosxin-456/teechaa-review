@@ -6,6 +6,11 @@ import { API_BASE_URL } from "../../config/apiConfig";
 const SelectQuiz = () => {
     const navigate = useNavigate();
     const [selectedExam, setSelectedExam] = useState({ examType: "", mode: "", testId: "" });
+    const [selectedFilters, setSelectedFilters] = useState({
+        year: "",
+        examType: "",
+        mode: "",
+    });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [userResults, setUserResults] = useState([]);
@@ -75,6 +80,7 @@ const SelectQuiz = () => {
                     examType: item.question.examType,
                     mode: item.mode,
                     testId: item.test_id,
+                    createdAt: item.createdAt,
                 });
             }
         });
@@ -82,8 +88,28 @@ const SelectQuiz = () => {
         return Array.from(uniqueExamDataMap.values());
     };
 
+    const getFilterOptions = (key) => {
+        const uniqueValues = new Set(
+            userResults.map((item) =>
+                key === "year"
+                    ? new Date(item.createdAt).getFullYear()
+                    : key === "examType"
+                        ? item.question?.examType // Access examType from question
+                        : item[key]
+            )
+        );
+        return Array.from(uniqueValues);
+    };
+    
 
-    const examData = getUniqueExamData();
+    const filteredExamData = getUniqueExamData().filter((data) => {
+        const year = new Date(data.createdAt).getFullYear();
+        return (
+            (!selectedFilters.year || year === parseInt(selectedFilters.year)) &&
+            (!selectedFilters.examType || data.examType === selectedFilters.examType) &&
+            (!selectedFilters.mode || data.mode === selectedFilters.mode)
+        );
+    });
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
@@ -104,32 +130,92 @@ const SelectQuiz = () => {
 
                 {error && <p className="text-red-500 mb-4">{error}</p>}
 
+                <div className="w-full max-w-4xl mb-6 flex gap-4">
+                    <select
+                        className="w-full p-2 border rounded-lg"
+                        value={selectedFilters.year}
+                        onChange={(e) =>
+                            setSelectedFilters((prev) => ({
+                                ...prev,
+                                year: e.target.value,
+                            }))
+                        }
+                    >
+                        <option value="">All Years</option>
+                        {getFilterOptions("year").map((year) => (
+                            <option key={year} value={year}>
+                                {year}
+                            </option>
+                        ))}
+                    </select>
+
+                    <select
+                        className="w-full p-2 border rounded-lg"
+                        value={selectedFilters.examType}
+                        onChange={(e) =>
+                            setSelectedFilters((prev) => ({
+                                ...prev,
+                                examType: e.target.value,
+                            }))
+                        }
+                    >
+                        <option value="">All Exam Types</option>
+                        {getFilterOptions("examType").map((type) => (
+                            <option key={type} value={type}>
+                                {type}
+                            </option>
+                        ))}
+                    </select>
+
+                    <select
+                        className="w-full p-2 border rounded-lg capitalize "
+                        value={selectedFilters.mode}
+                        onChange={(e) =>
+                            setSelectedFilters((prev) => ({
+                                ...prev,
+                                mode: e.target.value,
+                            }))
+                        }
+                    >
+                        <option className="captalize" value="">All Modes</option>
+                        {getFilterOptions("mode").map((mode) => (
+                            <option className="capitalize" key={mode} value={mode}>
+                                {mode}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
                 <div className="w-full max-w-4xl">
                     <table className="table-auto w-full border-collapse border border-gray-300 shadow-lg">
                         <thead>
                             <tr className="bg-[#2148C0] text-white">
+                                <th className="border border-gray-300 px-4 py-2">Date</th>
                                 <th className="border border-gray-300 px-4 py-2">Exam Type</th>
                                 <th className="border border-gray-300 px-4 py-2">Mode</th>
-                                {/* <th className="border border-gray-300 px-4 py-2">Test ID</th> */}
                                 <th className="border border-gray-300 px-4 py-2">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {examData.map((data, index) => (
+                            {filteredExamData.map((data, index) => (
                                 <tr
                                     key={index}
                                     className={`hover:bg-blue-50 ${selectedExam.testId === data.testId ? "bg-blue-100" : ""
                                         }`}
                                 >
                                     <td className="border border-gray-300 px-4 py-2 text-center">
+                                        {new Date(data.createdAt).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
+                                    </td>
+                                    <td className="border border-gray-300 px-4 py-2 text-center">
                                         {data.examType}
                                     </td>
                                     <td className="border border-gray-300 px-4 py-2 text-center capitalize">
                                         {data.mode}
                                     </td>
-                                    {/* <td className="border border-gray-300 px-4 py-2 text-center">
-                                        {data.testId}
-                                    </td> */}
                                     <td className="border border-gray-300 px-4 py-2 text-center">
                                         <button
                                             className="px-4 py-2 bg-[#2148C0] text-white rounded-lg hover:bg-blue-600 transition"

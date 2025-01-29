@@ -143,24 +143,30 @@ const SignupPage = () => {
 
                         {/* Phone Number */}
                         <div>
-                            <input
-                                type="text"
+                            <PhoneInput
+                                country={'us'} // Set a default country
                                 value={formData.phoneNumber}
-                                placeholder="Enter Phone NUmber"
-                                onChange={(e) => {
-                                    let value = e.target.value;
-                                    // Ensure the number always starts with "+234"
-                                    if (!value.startsWith("+234")) {
-                                        value = "+234" + value.replace(/^\+?\d*/, ""); // Add country code if missing
-                                    }
-                                    handlePhoneChange(value); // Update the form state
+                                onChange={(phone) => handlePhoneChange(phone)} // Updates form state
+                                inputStyle={{
+                                    width: '100%',
+                                    marginTop: '0.25rem',
+                                    padding: '1rem',
+                                    paddingLeft:"1.9rem",
+                                    paddingRight: "1.3rem",
+                                    paddingTop: "1.2rem",
+                                    paddingBottom: "1.2rem",
+                                    borderRadius: '0.5rem',
+                                    backgroundColor: 'transparent',
+                                    color: 'white',
+                                    border: '1px solid #fff',
                                 }}
-                                className="!w-full !mt-1 !p-2 !border !rounded-lg !bg-transparent !text-white !placeholder-white"
-                                required
+                                buttonStyle={{
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                }}
+                                inputClass="!placeholder-white" // Optional: Tailwind adjustments
                             />
                         </div>
-
-
 
                         {/* Gender */}
                         <div>

@@ -51,10 +51,10 @@ const Dashboard = () => {
             <header className="flex items-center justify-between bg-white px-6 py-4 shadow-md">
                 <h1 className="text-2xl font-bold text-[#2148C0]">TeeChaa Dashboard</h1>
                 <div className="flex items-center space-x-4">
-                    <button className="text-[#2148C0] flex items-center">
+                    {/* <button className="text-[#2148C0] flex items-center">
                         <FaMoon className="mr-2" />
                         <span className="hidden sm:inline">Dark Mode</span>
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => navigate('/profile')}
                         className="text-[#2148C0] flex items-center hover:underline"
@@ -81,7 +81,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Flex Container for Carousel and Sections */}
-                <div className="flex flex-col rounded-md md:w-[80%] md:m-auto lg:flex-row-reverse md:p-2 lg:items-start lg:justify-center wow animate__fadeInUp">
+                <div className="flex flex-col rounded-md md:w-[85%] md:m-auto lg:flex-row-reverse md:p-2 lg:items-start lg:justify-center wow animate__fadeInUp">
                     {/* Carousel */}
                     <div className="lg:w-[40%] mb-4 lg:mb-0">
                         <Carousel />
