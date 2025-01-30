@@ -6,15 +6,17 @@ import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiConfig";
 import WOW from "wowjs";
 import "animate.css";
-
+import { ClipLoader, RingLoader } from "react-spinners";
+import profilePlaceholder from '../../assets/profile.jpg'
 const StudentProfilePage = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     const userId = user?.user_id;
     const [student, setStudent] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
     const [isModalOpen, setModalOpen] = useState(false);
-    const profilePlaceholder = 'https://www.gravatar.com/avatar/c7763a1c6be16ffb347e8500434b61eb?s=200&r=pg&d=mm'
+    // const profilePlaceholder = 'https://www.gravatar.com/avatar/c7763a1c6be16ffb347e8500434b61eb?s=200&r=pg&d=mm'
     const [selectedImage, setSelectedImage] = useState(null);
     const [profileImagePreview, setProfileImagePreview] = useState(
         student.profile_image
@@ -36,6 +38,7 @@ const StudentProfilePage = () => {
     // Fetch user profile
     useEffect(() => {
         const fetchProfile = async () => {
+            setIsLoading(true)
             try {
                 const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
                     method: "GET",
@@ -49,7 +52,7 @@ const StudentProfilePage = () => {
                     const errorData = await response.json();
                     throw new Error(errorData.message || "Failed to fetch user profile");
                 }
-
+                setIsLoading(false)
                 const userData = await response.json();
                 const filteredData = {
                     firstName: userData.firstName || "",
@@ -98,6 +101,15 @@ const StudentProfilePage = () => {
         }
     };
 
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <ClipLoader color="#4A90E2" size={50} />
+                <p className="ml-4 text-blue-600 font-medium">Loading your progress...</p>
+            </div>
+        );
+    }
 
     // Handle profile image update
     const handleImageUpdate = async () => {

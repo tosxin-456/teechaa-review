@@ -3,6 +3,7 @@ import { FaBook, FaPen, FaClock, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiConfig";
 import { useQuiz } from "../../utils/api/Redux/QuizContext";
+import { ClipLoader, RingLoader } from "react-spinners";
 
 const TakeWaecQuiz = () => {
     const [quizData, setLocalQuizData] = useState([]);
@@ -12,6 +13,7 @@ const TakeWaecQuiz = () => {
     const [timeLeft, setTimeLeft] = useState(7200);
     const { setQuizData } = useQuiz();
     const [incompleteTests, setIncompleteTests] = useState([])
+    const [isLoading, setIsLoading] = useState(false);
     // const { mode, setmode } = useState();
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
@@ -19,6 +21,7 @@ const TakeWaecQuiz = () => {
 
     useEffect(() => {
         const fetchQuestions = async () => {
+            setIsLoading(true)
             try {
                 const response = await fetch(`${API_BASE_URL}/api/questions/exam/WAEC`, {
                     method: "GET",
@@ -29,10 +32,11 @@ const TakeWaecQuiz = () => {
                 });
 
                 if (!response.ok) {
+                    setIsLoading(false)
                     const errorData = await response.json();
                     throw new Error(errorData.message || "Failed to fetch questions");
                 }
-
+                setIsLoading(false)
                 const questions = await response.json();
                 setLocalQuizData(questions);
             } catch (error) {
@@ -234,6 +238,15 @@ const TakeWaecQuiz = () => {
     const uniqueSubjects = Array.from(
         new Map(quizData.map((quiz) => [quiz.subject_id, quiz.subject])).entries()
     );
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <ClipLoader color="#4A90E2" size={50} />
+                <p className="ml-4 text-blue-600 font-medium">Loading ...</p>
+            </div>
+        );
+    }
 
     return (
         <div>
