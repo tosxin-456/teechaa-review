@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import SignupPage from "./pages/signup";
 import LoginPage from "./pages/login";
 import Dashboard from "./pages/home";
@@ -23,38 +23,70 @@ import ExamHistory from "./pages/exam_history";
 import OTPResetPage from "./pages/otpRestPass";
 import { SessionExpirationPopup } from "./components/sessionExpiredPopup";
 import HomePage from "./pages/website";
+import SubscriptionModal from "./components/subscriptionModal";
+
+function AppContent() {
+  const location = useLocation();
+  const user = JSON.parse(localStorage.getItem("user"));
+  const subcribed = user?.subscribed;
+  // Pages where m-11 should NOT be applied
+  const excludedPaths = [
+    "/login",
+    "/register",
+    "/",
+    "/forgot-password",
+    "/otp",
+    "/reset-password",
+    "/reset-otp",
+    "/signup",
+  ];
+
+  // Get subscription status from localStorage
+  const isSubscribed = localStorage.getItem("subscribed") === "true";
+
+  return (
+    <div className="font-montserrat">
+      {/* Conditionally apply margin */}
+      <div className={excludedPaths.includes(location.pathname) || subcribed || isSubscribed ? "" : "m-11"}>
+        <SubscriptionModal />
+      </div>
+
+      <SessionExpirationPopup />
+
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/otp" element={<OTPPage />} />
+        <Route path="/reset-otp" element={<OTPResetPage />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/search-questions" element={<SearchQuestions />} />
+        <Route path="/result-checker" element={<SelectQuiz />} />
+        <Route path="/result" element={<ResultPage />} />
+        <Route path="/progress-report" element={<ProgressReport />} />
+        <Route path="/upcoming-tests" element={<UpcomingTests />} />
+        <Route path="/profile" element={<StudentProfilePage />} />
+        <Route path="/take-jamb" element={<TakeJambQuiz />} />
+        <Route path="/take-waec" element={<TakeWaecQuiz />} />
+        <Route path="/schedule-exam" element={<ScheuleExam />} />
+        <Route path="/exam" element={<ExamPage />} />
+        <Route path="/results" element={<Results2Page />} />
+        <Route path="/exam-history" element={<ExamHistory />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
+  );
+}
+
 
 function App() {
   return (
-    <QuizProvider> {/* Wrapping the app with QuizProvider */}
-      <div className="font-montserrat">
-        <Router>
-          <SessionExpirationPopup/>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/otp" element={<OTPPage />} />
-            <Route path="/reset-otp" element={<OTPResetPage />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/search-questions" element={<SearchQuestions />} />
-            <Route path="/result-checker" element={<SelectQuiz />} />
-            <Route path="/result" element={<ResultPage />} />
-            <Route path="/progress-report" element={<ProgressReport />} />
-            <Route path="/upcoming-tests" element={<UpcomingTests />} />
-            <Route path="/profile" element={<StudentProfilePage />} />
-            <Route path="/take-jamb" element={<TakeJambQuiz />} />
-            <Route path="/take-waec" element={<TakeWaecQuiz />} />
-            <Route path="/schedule-exam" element={<ScheuleExam />} />
-            <Route path="/exam" element={<ExamPage />} />
-            <Route path="/results" element={<Results2Page />} />
-            <Route path="/exam-history" element={<ExamHistory />} />
-            <Route path="*" element={<NotFound />} /> {/* Wildcard route moved to the end */}
-          </Routes>
-        </Router>
-      </div>
+    <QuizProvider>
+      <Router>
+        <AppContent />
+      </Router>
     </QuizProvider>
   );
 }

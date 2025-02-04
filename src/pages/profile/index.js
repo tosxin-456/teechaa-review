@@ -16,7 +16,6 @@ const StudentProfilePage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
     const [isModalOpen, setModalOpen] = useState(false);
-    // const profilePlaceholder = 'https://www.gravatar.com/avatar/c7763a1c6be16ffb347e8500434b61eb?s=200&r=pg&d=mm'
     const [selectedImage, setSelectedImage] = useState(null);
     const [profileImagePreview, setProfileImagePreview] = useState(
         student.profile_image
