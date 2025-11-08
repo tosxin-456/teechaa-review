@@ -5,6 +5,7 @@ import { API_BASE_URL } from "../../config/apiConfig";
 import { useQuiz } from "../../utils/api/Redux/QuizContext";
 import { ClipLoader, RingLoader } from "react-spinners";
 
+
 const TakeWaecQuiz = () => {
     const [quizData, setLocalQuizData] = useState([]);
     const [selectedSubjects, setSelectedSubjects] = useState([]);
@@ -18,6 +19,8 @@ const TakeWaecQuiz = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
     const user_id = user?.user_id;
+    const subscribed = user && user.subscribed === false;
+
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -32,7 +35,7 @@ const TakeWaecQuiz = () => {
                 });
 
                 if (!response.ok) {
-                    setIsLoading(false)
+                    setIsLoading(true)
                     const errorData = await response.json();
                     throw new Error(errorData.message || "Failed to fetch questions");
                 }
@@ -50,7 +53,7 @@ const TakeWaecQuiz = () => {
     useEffect(() => {
         const fetchSolved = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/tests/continue/${user_id}`, {
+                const response = await fetch(`${API_BASE_URL}/api/review-tests/continue/${user_id}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -64,15 +67,13 @@ const TakeWaecQuiz = () => {
                 }
 
                 const incomplete = await response.json();
-                // console.log(incomplete);
 
-                const jambTests = incomplete.data.filter(test =>
-                    test.answers.some(answer => answer.question.examType === "WAEC") // Filter by "JAMB" examType
-                );
+                // Ensure data exists and is an array
+                const tests = Array.isArray(incomplete?.data) ? incomplete.data : [];
+                const waecTests = tests.filter(test => test.examType === "WAEC");
 
-                // console.log(jambTests);
-                setIncompleteTests(jambTests);
-                // console.log(jambTests)
+                // console.log("JAMB Tests:", waecTests);
+                setIncompleteTests(waecTests);
             } catch (error) {
                 console.error("Error fetching questions:", error.message);
             }
@@ -82,6 +83,15 @@ const TakeWaecQuiz = () => {
     }, [user_id]);
 
 
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <ClipLoader color="#4A90E2" size={50} />
+                <p className="ml-4 text-blue-600 font-medium">Loading ...</p>
+            </div>
+        );
+    }
 
     const toggleSubject = (id) => {
         setSelectedSubjects((prev) =>
@@ -104,31 +114,19 @@ const TakeWaecQuiz = () => {
     };
 
     const startQuiz = async () => {
-        if (!mode || selectedSubjects.length === 0) return;
+        if (selectedSubjects.length === 0) return;
 
         const selectedQuizData = selectedSubjects.flatMap((subject_id) => {
             const allQuestions = quizData.filter((q) => q.subject_id === subject_id);
-            createTest();
+            const selectedYear = filters[subject_id]?.year;
 
-            if (mode === "exam") {
-                const randomQuestions = allQuestions
-                    .sort(() => Math.random() - 0.5)
-                    .slice(0, Math.min(5, allQuestions.length));
-                console.log(`Exam Questions for Subject ${subject_id}:`, randomQuestions);
-                return randomQuestions;
-            } else if (mode === "study") {
-                const selectedYear = filters[subject_id]?.year;
-                const yearFilteredQuestions = selectedYear
-                    ? allQuestions.filter((q) => q.year === parseInt(selectedYear, 10))
-                    : [];
-                const limitedQuestions = yearFilteredQuestions
-                    .sort(() => Math.random() - 0.5)
-                    .slice(0, Math.min(5, yearFilteredQuestions.length));
-                console.log(`Study Questions for Subject ${subject_id}:`, limitedQuestions);
-                return limitedQuestions;
-            }
+            // Get all questions for the selected year without filtering
+            const yearFilteredQuestions = selectedYear
+                ? allQuestions.filter((q) => q.year === parseInt(selectedYear, 10))
+                : allQuestions; // If no year is selected, return all questions for the subject
 
-            return [];
+            console.log(`Questions for Subject ${subject_id} (Year ${selectedYear}):`, yearFilteredQuestions);
+            return yearFilteredQuestions;
         });
 
         console.log("Final Selected Quiz Data:", selectedQuizData);
@@ -137,81 +135,74 @@ const TakeWaecQuiz = () => {
         const testId = await createTest();
 
         if (testId) {
-            navigate("/exam", { state: { test_id: testId, time_left: timeLeft, mode } });
+            navigate("/exam", { state: { test_id: testId, time_left: timeLeft } });
         } else {
             console.error("Test ID is not available");
         }
     };
 
 
-    const continueQuiz = async () => {
-        console.log("Incomplete Tests Data:", incompleteTests);
-
-        const testId = incompleteTests[0]?.test_id;
-        const mode = incompleteTests[0]?.answers[0]?.mode;
-
-        if (!testId) {
-            console.error("Test ID is not available");
+    const continueQuiz = async (test) => {
+        if (!test) {
+            console.error("No valid test data provided.");
             return;
         }
 
-        // Extract selected subjects and incomplete question IDs
-        const selectedSubjects = Array.from(
-            new Set(incompleteTests.flatMap((test) => test.answers.map((answer) => answer.question.subject_id)))
-        );
+        const { subject, year, examType, answered } = test;
 
-        const incompleteQuestionIds = new Set(
-            incompleteTests.flatMap((test) => test.answers.map((answer) => answer.question.id))
-        );
+        console.log("Test Data:", test);
 
-        // Include previously answered questions
-        const answeredQuestions = incompleteTests.flatMap((test) =>
-            test.answers.map((answer) => ({
-                ...answer.question,
-                selectedOption: answer.selected_option || null,
-            }))
-        );
+        // Convert answered array to a lookup object for easy merging
+        const answeredMap = new Map(answered.map(a => [a.question_id, a]));
 
-        // Collect total questions per subject
-        let totalQuestions = [...answeredQuestions];
+        // Get all questions matching the subject and year
+        let selectedQuestions = quizData.filter(q => q.subject === subject && q.year === year);
 
-        selectedSubjects.forEach((subject_id) => {
-            const subjectAnsweredQuestions = answeredQuestions.filter((q) => q.subject_id === subject_id);
-            const remainingQuestionsToSelect = Math.max(50 - subjectAnsweredQuestions.length, 0);
-
-            if (remainingQuestionsToSelect > 0) {
-                const additionalQuestions = quizData
-                    .filter((q) => q.subject_id === subject_id && !incompleteQuestionIds.has(q.id))
-                    .sort(() => Math.random() - 0.5) // Shuffle questions
-                    .slice(0, remainingQuestionsToSelect)
-                    .map((question) => ({
-                        ...question,
-                        selectedOption: null,
-                    }));
-
-                totalQuestions = [...totalQuestions, ...additionalQuestions];
-            }
+        // Merge answered data into selected questions
+        selectedQuestions = selectedQuestions.map(q => {
+            const answeredData = answeredMap.get(q.id) || {};
+            return {
+                ...q,
+                selectedOption: null, // Reset selection for new attempt
+                questionCorrect: answeredData.questionCorrect || 0,
+                answerPresent: answeredData.answerPresent || 0,
+                answerCorrect: answeredData.answerCorrect || 0,
+                imageCorrect: answeredData.imageCorrect || 0,
+                imagePresent: answeredData.imagePresent || 0,
+                user_id: answeredData.user_id || null,
+                createdAt: answeredData.createdAt || null,
+                updatedAt: answeredData.updatedAt || null,
+            };
         });
 
-        console.log("Final Quiz Data:", totalQuestions);
+        console.log("Final Quiz Data:", selectedQuestions);
 
-        // Update quiz data state and navigate
-        setQuizData(totalQuestions);
+        // Update state and navigate
+        setQuizData(selectedQuestions);
 
-        navigate("/exam", {
-            state: {
-                test_id: testId,
-                time_left: timeLeft,
-                mode,
-                quizData: totalQuestions,
-            },
-        });
+        // navigate("/exam", {
+        //     state: {
+        //         subject,
+        //         year,
+        //         examType,
+        //         quizData: selectedQuestions, // Ensures all required fields are passed
+        //     },
+        // });
     };
+
+
+
+
+
+
+
+
+    // console.log(mode)
 
 
     const createTest = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/tests/${user_id}`, {
+            const response = await fetch(`${API_BASE_URL}/api/review-tests/${user_id}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -239,15 +230,6 @@ const TakeWaecQuiz = () => {
         new Map(quizData.map((quiz) => [quiz.subject_id, quiz.subject])).entries()
     );
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-screen bg-gray-100">
-                <ClipLoader color="#4A90E2" size={50} />
-                <p className="ml-4 text-blue-600 font-medium">Loading ...</p>
-            </div>
-        );
-    }
-
     return (
         <div>
             <div className="flex items-center mb-2 mt-6">
@@ -262,7 +244,7 @@ const TakeWaecQuiz = () => {
             <div className="min-h-screen bg-gray-50 py-10 px-6">
                 <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
                     <h1 className="text-3xl font-bold text-center mb-8 text-[#2148C0]">
-                        Take WAEC Quiz Now
+                        Review WAEC Quiz Now
                     </h1>
 
                     {/* Subject Selection */}
@@ -286,34 +268,11 @@ const TakeWaecQuiz = () => {
                         </div>
                     </div>
 
-                    {/* Modes */}
-                    <div className="mb-6">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-4">Modes</h2>
-                        <div className="flex justify-around">
-                            <button
-                                onClick={() => setMode("study")}
-                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "study" ? "bg-blue-600 text-white" : "bg-gray-200"
-                                    }`}
-                            >
-                                <FaBook className="text-2xl mb-2" />
-                                <span>Study</span>
-                            </button>
-                            <button
-                                onClick={() => setMode("exam")}
-                                className={`flex flex-col items-center px-4 py-2 rounded-lg transition ${mode === "exam" ? "bg-blue-600 text-white" : "bg-gray-200"
-                                    }`}
-                            >
-                                <FaPen className="text-2xl mb-2" />
-                                <span>Exam</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Filters for Study Mode */}
-                    {mode === "study" && (
+                    {/* Year Selection for Each Selected Subject */}
+                    {selectedSubjects.length > 0 && (
                         <div className="mb-6">
                             <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                                Filters (for each subject)
+                                Select Year for Each Subject
                             </h2>
                             {selectedSubjects.map((subjectId) => {
                                 const subjectYears = [
@@ -342,17 +301,18 @@ const TakeWaecQuiz = () => {
                                             </label>
                                             <select
                                                 value={filters[subjectId]?.year || ""}
-                                                onChange={(e) =>
-                                                    updateFilter(subjectId, "year", e.target.value)
-                                                }
+                                                onChange={(e) => updateFilter(subjectId, "year", e.target.value)}
                                                 className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-600"
                                             >
                                                 <option value="">Select Year</option>
-                                                {subjectYears.map((year) => (
-                                                    <option key={year} value={year}>
-                                                        {year}
-                                                    </option>
-                                                ))}
+                                                {subjectYears
+                                                    .slice()
+                                                    .sort((a, b) => a - b)
+                                                    .map((year) => (
+                                                        <option key={year} value={year}>
+                                                            {year}
+                                                        </option>
+                                                    ))}
                                             </select>
                                         </div>
                                     </div>
@@ -361,63 +321,12 @@ const TakeWaecQuiz = () => {
                         </div>
                     )}
 
-                    {/* Timer */}
-                    {mode === "exam" && (
-                        <div className="mb-6">
-                            <h2 className="text-lg font-semibold text-gray-700 mb-4">Set Timer</h2>
-                            <div className="flex items-center gap-4">
-                                <FaClock className="text-blue-600 text-2xl" />
-
-                                <div className="flex flex-col items-center">
-                                    <label htmlFor="hours" className="text-sm text-gray-600 font-medium">
-                                        Hours
-                                    </label>
-                                    <input
-                                        id="hours"
-                                        type="number"
-                                        min="0"
-                                        max="2"
-                                        value={Math.floor(timeLeft / 3600)}
-                                        onChange={(e) => {
-                                            const hours = parseInt(e.target.value, 10) || 0;
-                                            setTimeLeft(hours * 3600 + (timeLeft % 3600));
-                                        }}
-                                        className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
-                                    />
-                                </div>
-
-                                <span className="text-lg font-bold">:</span>
-
-                                <div className="flex flex-col items-center">
-                                    <label htmlFor="minutes" className="text-sm text-gray-600 font-medium">
-                                        Minutes
-                                    </label>
-                                    <input
-                                        id="minutes"
-                                        type="number"
-                                        min="0"
-                                        max="59"
-                                        value={Math.floor((timeLeft % 3600) / 60)}
-                                        onChange={(e) => {
-                                            const minutes = parseInt(e.target.value, 10) || 0;
-                                            setTimeLeft(
-                                                Math.floor(timeLeft / 3600) * 3600 + minutes * 60
-                                            );
-                                        }}
-                                        className="w-16 p-2 border rounded-md focus:ring-2 focus:ring-blue-600 text-lg font-bold text-gray-700 text-center"
-                                    />
-                                </div>
-                            </div>
-
-                        </div>
-                    )}
-
                     {/* Start Quiz Button */}
                     <div className="text-center">
                         <button
                             onClick={startQuiz}
-                            disabled={!mode || selectedSubjects.length === 0} // Disabled if no subjects are selected
-                            className={`px-6 py-3 rounded-md shadow-lg transition ${mode && selectedSubjects.length > 0
+                            disabled={selectedSubjects.length === 0} // Disabled if no subjects are selected
+                            className={`px-6 py-3 rounded-md shadow-lg transition ${selectedSubjects.length > 0
                                 ? "bg-blue-600 hover:bg-blue-700 text-white"
                                 : "bg-gray-400 text-gray-200 cursor-not-allowed"
                                 }`}
@@ -425,76 +334,65 @@ const TakeWaecQuiz = () => {
                             Start Quiz
                         </button>
                     </div>
+                {/* Incomplete Tests Section */}
+                {incompleteTests?.length > 0 && (
+                    <div className="mt-8">
+                        <h2 className="text-xl font-semibold text-gray-700 mb-4">Incomplete Reviews</h2>
+                        <div className="bg-yellow-50 p-4 rounded-lg shadow-md">
+                            <h3 className="font-semibold text-gray-800 mb-2">Continue where you left off:</h3>
+                            <div className="space-y-4">
+                                {incompleteTests.map((test, index) => {
+                                    // Ensure subject is always an array (in case of multiple subjects in the future)
+                                    const uniqueSubjects = [test.subject];
 
-                    {/* Incomplete Tests Section */}
-                    {incompleteTests.length > 0 && (
-                        <div className="mt-8">
-                            <h2 className="text-xl font-semibold text-gray-700 mb-4">
-                                Incomplete Studies
-                            </h2>
-                            <div className="bg-yellow-50 p-4 rounded-lg shadow-md">
-                                <h3 className="font-semibold text-gray-800 mb-2">
-                                    Continue where you left off:
-                                </h3>
-                                <div className="space-y-4">
-                                    {incompleteTests.map((test, index) => {
-                                        const uniqueSubjects = Array.from(
-                                            new Set(test.answers.map((answer) => answer.question.subject))
-                                        );
-                                        const totalQuestions = uniqueSubjects.reduce((total, subject) => {
-                                            const subjectQuestions = quizData.filter((q) => q.subject === subject);
-                                            return total + Math.min(subjectQuestions.length, 5);
-                                        }, 0);
+                                    // console.log("Unique Subjects:", uniqueSubjects);
 
-                                        const answeredQuestions = test.answers.length;
-                                        const progressPercentage = totalQuestions
-                                            ? (answeredQuestions / totalQuestions) * 100
-                                            : 0;
+                                    // Calculate total answered questions from the array length
+                                    const answeredQuestions = Array.isArray(test.answered) ? test.answered.length : 0;
+                                    const totalQuestions = test.totalQuestions || 0;
 
-                                        return (
-                                            <div key={test.test_id} className="flex flex-col border-b py-4">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div>
-                                                        <h4 className="text-md font-semibold text-gray-800">{`Study ${index + 1}`}</h4> {/* Display index + 1 */}
-                                                        <span className="text-sm text-gray-600">
-                                                            Subjects: {uniqueSubjects.join(", ")}
-                                                        </span>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => continueQuiz(test.test_id)}
-                                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                                    >
-                                                        Continue
-                                                    </button>
+                                    const progressPercentage = totalQuestions ? (answeredQuestions / totalQuestions) * 100 : 0;
+
+                                    return (
+                                        <div key={index} className="flex flex-col border-b py-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div>
+                                                    <h4 className="text-md font-semibold text-gray-800">{`Study ${index + 1}`}</h4>
+                                                    <span className="text-sm text-gray-600">
+                                                        {test.subject} {test.examType}, {test.year}
+                                                    </span>
                                                 </div>
-
-                                                {/* Progress Bar */}
-                                                <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-blue-500"
-                                                        style={{ width: `${progressPercentage}%` }}
-                                                    ></div>
-                                                </div>
-                                                <span className="text-sm text-gray-600 mt-1">
-                                                    {answeredQuestions} out of {totalQuestions} questions answered
-                                                </span>
+                                                <button
+                                                    onClick={() => continueQuiz(test)}
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                >
+                                                    Continue
+                                                </button>
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                            <div className="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-blue-500" style={{ width: `${progressPercentage}%` }}></div>
+                                            </div>
+                                            <span className="text-sm text-gray-600 mt-1">
+                                                {answeredQuestions} out of {totalQuestions} questions answered
+                                            </span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
-                    )}
-
-
-
+                    </div>
+                )}
                 </div>
+
+
+
             </div>
             <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">
                 <p>&copy; {new Date().getFullYear()} TeeChaa CBT Application. All rights reserved.</p>
             </footer>
         </div>
     );
+
 
 };
 

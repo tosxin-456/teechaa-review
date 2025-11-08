@@ -4,27 +4,20 @@ import {
     FaUser,
     FaBook,
     FaQuestionCircle,
-    FaChartLine,
-    FaHistory,
     FaClipboardCheck,
-    FaMoon,
-    FaSun
-} from "react-icons/fa"; // Icons
+} from "react-icons/fa"; 
 import Carousel from "../../components/dashboardCarousel";
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook
+import { useNavigate } from "react-router-dom"; 
 import WOW from "wowjs";
 import "animate.css";
 
 const Dashboard = () => {
-    const navigate = useNavigate(); // Initialize navigate function
+    const navigate = useNavigate();
 
     const sections = [
-        { id: 1, title: "Take JAMB", description: "Prepare for the JAMB exam with the best resources and mock tests.", icon: <FaBook color="#2148C0" />, path: "/take-jamb" },
-        { id: 2, title: "Take WAEC", description: "Ace your WAEC exam with our extensive study materials and practice tests.", icon: <FaClipboardCheck color="#2148C0" />, path: "/take-waec" },
+        { id: 1, title: "Review JAMB", description: "Prepare for the JAMB exam with the best resources and mock tests.", icon: <FaBook color="#2148C0" />, path: "/review-jamb" },
+        { id: 2, title: "Review WAEC", description: "Ace your WAEC exam with our extensive study materials and practice tests.", icon: <FaClipboardCheck color="#2148C0" />, path: "/review-waec" },
         { id: 3, title: "Questions Search", description: "Find detailed questions and answers for exams.", icon: <FaQuestionCircle color="#2148C0" />, path: "/search-questions" },
-        { id: 4, title: "Progress Report", description: "Track your progress and performance.", icon: <FaChartLine color="#2148C0" />, path: "/progress-report" },
-        { id: 5, title: "Exam History", description: "Stay updated on your exams history", icon: <FaHistory color="#2148C0" />, path: "/exam-history" },
-        { id: 6, title: "Result Checker", description: "Check your results instantly.", icon: <FaClipboardCheck color="#2148C0" />, path: "/result-checker" },
     ];
 
     const user = JSON.parse(localStorage.getItem('user'))

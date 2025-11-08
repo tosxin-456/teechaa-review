@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { IoIosAlarm } from "react-icons/io";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuiz } from "../../utils/api/Redux/QuizContext";
@@ -13,6 +13,7 @@ const Navbar = () => (
         <h1 className="text-2xl font-bold text-white">Exam Portal</h1>
     </nav>
 );
+
 
 const Sidebar = ({ isOpen, groupedQuestions, onSelectSubject, onSelectQuestion, currentSubject, currentQuestionIndex, onClose }) => {
     const sidebarRef = useRef(null);
@@ -74,13 +75,6 @@ const Sidebar = ({ isOpen, groupedQuestions, onSelectSubject, onSelectQuestion, 
 
 
 
-const Timer = ({ timeLeft }) => (
-    <div className="text-gray-700 w-28 flex items-center font-semibold">
-        <IoIosAlarm className="text-3xl text-[#2148C0] animate-pulse" />
-        <span className="ml-2 text-xl">{timeLeft}</span>
-    </div>
-);
-
 const ConfirmModal = ({ onCancel, onConfirm }) => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg">
@@ -104,52 +98,137 @@ const ConfirmModal = ({ onCancel, onConfirm }) => (
     </div>
 );
 
-const QuestionCard = ({ question, options, currentAnswer, onOptionSelect }) => (
-    <div className="bg-gray-50 p-6 rounded-lg shadow-md overflow-auto">
-        <h3
-            className="text-lg font-semibold mb-4"
-            dangerouslySetInnerHTML={{ __html: question }}
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {options.map((option, index) => {
-                const isSelected = currentAnswer === index;
-
-                return (
-                    <div
-                        key={index}
-                        className={`p-4 rounded-lg shadow-md border cursor-pointer ${isSelected
-                            ? "bg-blue-100 border-blue-500"
-                            : "hover:bg-gray-200"
-                            }`}
-                        onClick={() => onOptionSelect(index)}
-                    >
-                        <span>
-                            {String.fromCharCode(65 + index)}. {option}
-                        </span>
-                    </div>
-                );
-            })}
+const ToggleSwitch = ({ label, value, onChange }) => (
+    <div className="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm border cursor-pointer" onClick={() => onChange(!value)}>
+        <span className="font-medium">{label}</span>
+        <div className={`flex items-center space-x-2 px-3 py-1 rounded-full ${value ? "bg-green-100 border-green-500" : "bg-red-100 border-red-500"} border transition-all`}>
+            {value ? (
+                <>
+                    <FaCheckCircle className="text-green-600" />
+                    <span className="text-green-600 font-semibold">True</span>
+                </>
+            ) : (
+                <>
+                    <FaTimesCircle className="text-red-600" />
+                    <span className="text-red-600 font-semibold">False</span>
+                </>
+            )}
         </div>
     </div>
 );
 
+const QuestionCard = ({
+    question,
+    image,
+    options,
+    currentAnswer,
+    questionCorrect,
+    answerPresent,
+    answerCorrect,
+    imageCorrect,
+    imagePresent,
+    onCheckboxChange,
+    explanation,
+    isCorrect
+}) => {
+    console.log(explanation);
+
+    // Track the image source dynamically
+    const [imageSrc, setImageSrc] = useState(image ? `${API_BASE_URL}${image}` : null);
+
+    useEffect(() => {
+        if (window.MathJax) {
+            window.MathJax.typesetPromise()
+                .then(() => console.log("MathJax successfully updated for the new question."))
+                .catch((err) => console.error("Error updating MathJax:", err));
+        }
+    }, [question, explanation]); // Update whenever question or explanation changes
+
+    return (
+        <div className="bg-gray-50 p-6 rounded-lg shadow-md overflow-auto">
+            {/* Image Handling */}
+            {imageSrc && (
+                <div className="mb-4">
+                    <img
+                        src={imageSrc}
+                        onError={(e) => {
+                            if (e.target.src.endsWith(".jpg")) {
+                                setImageSrc(`${API_BASE_URL}${image.replace(".jpg", ".png")}`);
+                            } else if (e.target.src.endsWith(".png")) {
+                                setImageSrc(null); // Hide image if both formats fail
+                            }
+                        }}
+                        alt="Question Image"
+                        className="rounded-lg w-full max-h-60 object-contain"
+                    />
+                    <div className="mt-2 space-y-2">
+                        <ToggleSwitch label="Is the image above clear?" value={imageCorrect} onChange={(val) => onCheckboxChange("imageCorrect", val)} />
+                        <ToggleSwitch label="Does the image relate to the question?" value={imagePresent} onChange={(val) => onCheckboxChange("imagePresent", val)} />
+                    </div>
+                </div>
+            )}
+
+            {/* Question */}
+            <h3 className="text-lg font-semibold mb-4" dangerouslySetInnerHTML={{ __html: question }} />
+            <ToggleSwitch label="Is the question clear?" value={questionCorrect} onChange={(val) => onCheckboxChange("questionCorrect", val)} />
+
+            {/* Options */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                {options.map((option, index) => {
+                    const isSelected = currentAnswer === option;
+                    const isCorrectAnswer = isCorrect - 1 === index;
+                    return (
+                        <div
+                            key={index}
+                            className={`p-4 rounded-lg shadow-md border flex items-center justify-between cursor-pointer 
+                                ${isCorrectAnswer ? "bg-green-100 border-green-500" : "hover:bg-gray-200"} 
+                                ${isSelected ? "bg-blue-100 border-blue-500" : ""}`}
+                        >
+                            <span>{String.fromCharCode(65 + index)}. {option}</span>
+                            {isCorrectAnswer && <span className="text-green-600 font-bold">✔</span>}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Answer Correctness Toggle */}
+            <div className="mt-6">
+                <ToggleSwitch label="Is the correct answer present in the options A-D?" value={answerPresent} onChange={(val) => onCheckboxChange("answerPresent", val)} />
+            </div>
+            <div className="mt-6">
+                <ToggleSwitch label="Is the option selected correct??" value={answerCorrect} onChange={(val) => onCheckboxChange("answerCorrect", val)} />
+            </div>
+            
+
+            {/* Explanation */}
+            <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg overflow-auto">
+                <h4 className="font-semibold text-[#2148C0]">Explanation:</h4>
+                <p>{explanation}</p>
+            </div>
+        </div>
+    );
+};
 
 
 
 const ExamPage = () => {
     const { quizData } = useQuiz();
-    const [userResults, setUserResults] = useState([]);
     const navigate = useNavigate();
-    const location = useLocation();
-    const { test_id, time_left, mode } = location.state || {};
-    // console.log(test_id, time_left)
     const [showEntryModal, setShowEntryModal] = useState(true);
     const [currentSubject, setCurrentSubject] = useState(quizData?.[0]?.subject?.toUpperCase() || "");
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState({});
-    const [selectedExam, setSelectedExam] = useState({ examType: "", year: "" });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    
+
+    const handleCheckboxChange = (key, value) => {
+        setCheckboxState((prevState) => ({
+            ...prevState,
+            [key]: value,
+        }));
+    };
+
+    
+
 
     useEffect(() => {
         const initialAnswers = quizData.reduce((acc, question) => {
@@ -160,6 +239,143 @@ const ExamPage = () => {
         }, {});
         setSelectedAnswers(initialAnswers);
     }, [quizData]);
+
+    useEffect(() => {
+        if (window.MathJax) {
+            window.MathJax?.typesetClear(); // Clear any previous MathJax rendering
+            window.MathJax?.typesetPromise()
+                .then(() => {
+                    console.log("MathJax successfully updated for the new question.");
+                })
+                .catch((err) => {
+                    console.error("Error updating MathJax:", err);
+                });
+        }
+    }, [currentQuestionIndex, currentSubject]);
+
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+    document.addEventListener("keyup", async (e) => {
+        if (e.key === "PrintScreen" || e.key === "PrtSc") {
+            try {
+                await navigator.clipboard.writeText(""); // Clear clipboard
+                alert("Screenshots are not allowed!");
+            } catch (err) {
+                console.error("Clipboard access denied:", err);
+            }
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (
+            e.key === "PrintScreen" ||
+            e.key === "PrtSc" ||
+            (e.ctrlKey && e.key === "p") ||  // Block Print
+            (e.ctrlKey && e.key === "s") ||  // Block Save Page
+            (e.ctrlKey && e.key === "c")     // Block Copy
+        ) {
+            e.preventDefault();
+            alert("Screenshots are not allowed!");
+        }
+    });
+
+    // setInterval(() => {
+    //     if (navigator.plugins.length > 0) {
+    //         alert("Screen recording tools are detected. Please close them.");
+    //         window.location.reload();
+    //     }
+    // }, 5000);
+
+
+
+
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const user = JSON.parse(localStorage.getItem("user"));
+    const user_id = user?.user_id;
+    console.log(quizData)
+
+    const groupedQuestions = React.useMemo(() => {
+        return (
+            quizData?.reduce((acc, item) => {
+                if (!acc[item.subject.toUpperCase()]) acc[item.subject.toUpperCase()] = [];
+                acc[item.subject.toUpperCase()].push(item);
+                return acc;
+            }, {}) || {}
+        );
+    }, [quizData]);
+
+    const currentSubjectQuestions = groupedQuestions[currentSubject] || [];
+    const totalQuestions = currentSubjectQuestions.length;
+
+    const handleNext = async () => {
+        if (!user_id) {
+            console.error("User ID is missing.");
+            return;
+        }
+
+        // Ensure quizData and index are valid
+        if (!quizData || quizData.length === 0 || currentQuestionIndex >= quizData.length) {
+            console.error("Invalid question index or quiz data.");
+            return;
+        }
+
+        // Get the current question
+        const currentQuestion = quizData[currentQuestionIndex];
+        if (!currentQuestion) return;
+
+        // Format answer for submission
+        const formattedAnswer = {
+            user_id,
+            question_id: currentQuestion.id,
+            questionCorrect: checkboxState.questionCorrect ?? false,
+            answerPresent: checkboxState.answerPresent ?? false,
+            answerCorrect: checkboxState.answerCorrect ?? false,
+            imageCorrect: checkboxState.imageCorrect ?? false,
+            imagePresent: currentQuestion.image ? checkboxState.imagePresent ?? false : null,
+            subject: currentQuestion.subject,
+            year: currentQuestion.year,
+            examType: currentQuestion.examType
+        };
+
+        console.log("Submitting answer:", formattedAnswer);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/answer-reviewers/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify(formattedAnswer),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Failed to submit answer:", errorData.message);
+                return;
+            }
+
+            console.log("Answer submitted successfully.");
+
+            // Reset checkbox state after submission
+            setCheckboxState({
+                questionCorrect: false,
+                answerPresent: false,
+                imageCorrect: false,
+                imagePresent: false
+            });
+
+            // Move to the next question if there are more left
+            if (currentQuestionIndex < quizData.length - 1) {
+                setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+            } else {
+                console.log("Quiz completed.");
+                // Handle quiz completion logic here (e.g., navigate to results)
+            }
+        } catch (error) {
+            console.error("Error submitting answer:", error);
+        }
+    };
 
     useEffect(() => {
         if (window.MathJax) {
@@ -175,290 +391,19 @@ const ExamPage = () => {
     }, [currentQuestionIndex, currentSubject]);
 
 
-    const [isSidebarOpen, setSidebarOpen] = useState(false);
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const user = JSON.parse(localStorage.getItem("user"));
-    const user_id = user?.user_id;
-
-    const handleContinue = () => {
-        setShowEntryModal(false);
-    };
-
-    const saveUnansweredQuestions = async () => {
-        try {
-            const unansweredQuestions = quizData.filter(
-                (question) => selectedAnswers[question.id] === undefined
-            );
-
-            const promises = unansweredQuestions.map((question) => {
-                return fetch(`${API_BASE_URL}/api/answer/`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`
-                    },
-                    body: JSON.stringify({
-                        mode: "exam",
-                        test_id,
-                        user_id,
-                        question_id: question.id,
-                        selected_option: null,
-                        is_correct: 0, // Assuming unanswered questions are marked incorrect
-                    }),
-                });
-            });
-
-            await Promise.all(promises);
-            console.log("All unanswered questions saved as null.");
-        } catch (error) {
-            console.error("Error saving unanswered questions:", error.message);
-        }
-    };
-
-
-    const groupedQuestions = React.useMemo(() => {
-        return (
-            quizData?.reduce((acc, item) => {
-                if (!acc[item.subject.toUpperCase()]) acc[item.subject.toUpperCase()] = [];
-                acc[item.subject.toUpperCase()].push(item);
-                return acc;
-            }, {}) || {}
-        );
-    }, [quizData]);
-
-    const currentSubjectQuestions = groupedQuestions[currentSubject] || [];
-    const totalQuestions = currentSubjectQuestions.length;
-
-    const [timeLeft, setTimeLeft] = useState(() => {
-        const savedTime = localStorage.getItem("timeLeft");
-        return savedTime ? parseInt(savedTime, 10) : time_left || 7200;
-    });
-
-
-    // Format the time for display
-    const formatTime = (seconds) => {
-        const minutes = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${minutes < 10 ? `0${minutes}` : minutes}:${secs < 10 ? `0${secs}` : secs}`;
-    };
-
-    useEffect(() => {
-        if (timeLeft <= 0 && mode === "exam") {
-            saveUnansweredQuestions().then(() => {
-                handleSubmit(); // Automatically submit when time expires
-            });
-            return;
-        }
-
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
-        }, 1000);
-
-        return () => clearInterval(timer); // Cleanup on component unmount
-    }, [timeLeft]);
-
-
-    // Start countdown when timeLeft is greater than 0
-    useEffect(() => {
-        if (timeLeft <= 0 && mode === "exam") return;
-
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
-        }, 1000);
-
-        return () => clearInterval(timer); // Cleanup on component unmount
-    }, [timeLeft]);
-
-    const saveAnswerToDatabase = async (selectedOptionIndex) => {
-        try {
-            const optionsMap = { 0: "A", 1: "B", 2: "C", 3: "D" };
-            const correctMap = { A: "1", B: "2", C: "3", D: "4" };
-            const questionId = currentSubjectQuestions[currentQuestionIndex]?.id;
-            const isCorrect = currentSubjectQuestions[currentQuestionIndex]?.correct_option === correctMap[selectedOptionIndex];
-            console.log(correctMap[selectedOptionIndex])
-            const response = await fetch(`${API_BASE_URL}/api/answer/${user_id}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify({
-                    test_id,
-                    user_id,
-                    question_id: questionId,
-                    selected_option: optionsMap[selectedOptionIndex],
-                    is_correct: isCorrect,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to save answer");
-            }
-        } catch (error) {
-            console.error("Error saving answer:", error.message);
-        }
-    };
-
-    const handleOptionSelect = async (index) => {
-        const questionId = currentSubjectQuestions[currentQuestionIndex]?.id;
-
-        if (!questionId) {
-            console.error("Invalid question ID");
-            return;
-        }
-        // Update the state for selected answers
-        setSelectedAnswers((prev) => ({
-            ...prev,
-            [questionId]: index, // Use question ID as the key
-        }));
-
-        console.log(questionId, index, selectedAnswers)
-        try {
-            // Save the answer asynchronously
-            await saveAnswerToDatabase(questionId, index);
-            console.log(`Answer for question ${questionId} saved successfully: Option ${index}`);
-        } catch (error) {
-            console.error(`Failed to save answer for question ${questionId}:`, error.message);
-            // Optional: Add retry logic or notify the user
-        }
-    };
-
-
-    const handleNext = async () => {
-        const currentQuestionId = currentSubjectQuestions[currentQuestionIndex]?.id; // Get current question ID
-        const correctAnswer = currentSubjectQuestions[currentQuestionIndex]?.correctAnswer; // Get correct answer for comparison
-        const selectedOption = selectedAnswers[currentQuestionId] !== undefined ? selectedAnswers[currentQuestionId] : null;
-        const correctMap = { 0: "1", 1: "2", 2: "3", 3: "4" };
-        const optionsMap = { 0: "A", 1: "B", 2: "C", 3: "D" };
-        console.log("Selected Answers:", selectedAnswers);
-        console.log("Current Question ID:", currentQuestionId);
-        console.log("Selected Option:", selectedOption);
-        console.log("Correct Answer:", correctAnswer);
-
-        // Check if question ID and selected option are valid
-        if (currentQuestionId && selectedOption !== undefined && selectedOption !== null) {
-            const isCorrect = correctMap[selectedOption] === correctAnswer ? 1 : 0; // Determine correctness
-            const answerData = {
-                selected_option: optionsMap[selectedOption],
-                is_correct: isCorrect,
-                user_id,
-                question_id: currentQuestionId,
-                test_id,
-                mode,
-            };
-
-            console.log("Answer Data:", answerData);
-
-            try {
-                // Check if the answer already exists
-                const response = await fetch(
-                    `${API_BASE_URL}/api/answer/update/${user_id}/${currentQuestionId}/${test_id}/${mode}`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`
-                    },
-                });
-
-                const data = await response.json();
-
-                if (data.success && data.answerExists) {
-                    // If the answer exists, update it
-                    const updateResponse = await fetch(
-                        `${API_BASE_URL}/api/answer/update/${user_id}/${currentQuestionId}/${test_id}/${mode}`,
-                        {
-                            method: "PATCH",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${localStorage.getItem("token")}`
-                            },
-                            body: JSON.stringify(answerData),
-                        }
-                    );
-
-                    if (!updateResponse.ok) {
-                        throw new Error("Failed to update answer");
-                    }
-                    console.log("Answer updated successfully");
-                } else {
-                    // If the answer doesn't exist, create a new one
-                    const createResponse = await fetch(`${API_BASE_URL}/api/answer/`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${localStorage.getItem("token")}`
-                        },
-                        body: JSON.stringify(answerData),
-                    });
-
-                    if (!createResponse.ok) {
-                        throw new Error("Failed to save answer");
-                    }
-                    console.log("Answer saved successfully");
-                }
-            } catch (error) {
-                console.error("Error handling answer:", error.message);
-            }
-        } else {
-            console.warn("No option selected or invalid question ID.");
-        }
-
-        // If it's the last question, handle submission and navigate to results
-        if (currentQuestionIndex === totalQuestions - 1) {
-            handleSubmit();
-        } else {
-            // Otherwise, move to the next question
-            setCurrentQuestionIndex((prev) => (prev < totalQuestions - 1 ? prev + 1 : prev));
-        }
-    };
-
-    const handleSubmit = async () => {
-        await saveUnansweredQuestions(); // Save unanswered questions
-        const formattedAnswers = currentSubjectQuestions.map((question) => {
-            const selectedOption = selectedAnswers[question.id];
-            const correctMap = { 0: "1", 1: "2", 2: "3", 3: "4" };
-            const optionsMap = { 0: "A", 1: "B", 2: "C", 3: "D" };
-            const isCorrect = correctMap[selectedOption] === question.correctAnswer ? 1 : 0;
-            return {
-                user_answer_id: question.id,
-                user_id: user_id,
-                question_id: question.id,
-                test_id: test_id,
-                selected_option: optionsMap[selectedOption],
-                is_correct: isCorrect,
-                mode: mode,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                question: {
-                    id: question.id,
-                    year: question.year,
-                    examType: question.examType,
-                    question: question.question,
-                    image: question.image,
-                    subject: question.subject,
-                    explanation: question.explanation,
-                    option_a: question.option_a,
-                    option_b: question.option_b,
-                    option_c: question.option_c,
-                    option_d: question.option_d,
-                    correctAnswer: question.correctAnswer,
-                },
-            };
-        });
-
-        console.log("Submitting Answers:", formattedAnswers);
-        navigate("/result", { state: { result: formattedAnswers } });
-    };
 
     const handleExit = async () => {
-        if (mode === "exam") {
-            await saveUnansweredQuestions();
-        }
-        navigate(-1); 
-        localStorage.removeItem("timeLeft"); // Remove the saved timeLeft from localStorage
+        navigate(-1);
+        localStorage.removeItem("timeLeft");
     };
 
-
+    const [checkboxState, setCheckboxState] = useState({
+        questionCorrect: currentSubjectQuestions[currentQuestionIndex]?.questionCorrect ?? false,
+        answerPresent: currentSubjectQuestions[currentQuestionIndex]?.answerPresent ?? false,
+        answerCorrect: currentSubjectQuestions[currentQuestionIndex]?.answerCorrect ?? false,
+        imageCorrect: currentSubjectQuestions[currentQuestionIndex]?.imageCorrect ?? false,
+        imagePresent: currentSubjectQuestions[currentQuestionIndex]?.imagePresent ?? false,
+    });
 
 
 
@@ -519,15 +464,13 @@ const ExamPage = () => {
                         <h2 className="text-xl font-bold">
                             {currentSubject} - Question {currentQuestionIndex + 1} / {totalQuestions}
                         </h2>
-                        {mode === "exam" && (
-                            <Timer timeLeft={formatTime(timeLeft)} />
-                        )}
                     </div>
 
                     {totalQuestions > 0 ? (
                         <QuestionCard
                             key={currentSubjectQuestions[currentQuestionIndex]?.id}
                             question={currentSubjectQuestions[currentQuestionIndex]?.question}
+                            image={currentSubjectQuestions[currentQuestionIndex]?.image}
                             options={[
                                 currentSubjectQuestions[currentQuestionIndex]?.option_a,
                                 currentSubjectQuestions[currentQuestionIndex]?.option_b,
@@ -535,8 +478,17 @@ const ExamPage = () => {
                                 currentSubjectQuestions[currentQuestionIndex]?.option_d,
                             ]}
                             currentAnswer={selectedAnswers[currentSubjectQuestions[currentQuestionIndex]?.id] ?? null}
-                            onOptionSelect={handleOptionSelect}
+                            questionCorrect={checkboxState.questionCorrect}
+                            answerPresent={checkboxState.answerPresent}
+                            answerCorrect={checkboxState.answerCorrect}
+                            imageCorrect={checkboxState.imageCorrect}
+                            imagePresent={checkboxState.imagePresent}
+                            onCheckboxChange={handleCheckboxChange}
+                            explanation={currentSubjectQuestions[currentQuestionIndex]?.explanation}
+                            isCorrect={currentSubjectQuestions[currentQuestionIndex]?.correctAnswer}
                         />
+
+
                     ) : (
                         <p className="text-center text-gray-500">No questions available.</p>
                     )}
@@ -576,7 +528,25 @@ const ExamPage = () => {
                         <div className="bg-white p-6 rounded-lg shadow-lg">
                             <h2 className="text-lg font-bold mb-4 text-center">Important Notice</h2>
                             <p className="text-gray-700 mb-4 text-center">
-                                Please do not refresh the page while taking the exam. Refreshing the page may result in losing your progress.
+                                You are reviewing the questions to verify their accuracy. Please do not refresh the page, as this may result in losing your progress
+                            </p>
+                            <div className="flex justify-center">
+                                <button
+                                    onClick={() => setShowEntryModal(false)}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                >
+                                    I Understand
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {showEntryModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-bold mb-4 text-center">Important Notice</h2>
+                            <p className="text-gray-700 mb-4 text-center">
+                                You are reviewing the questions to verify their accuracy. Please do not refresh the page, as this may result in losing your progress
                             </p>
                             <div className="flex justify-center">
                                 <button

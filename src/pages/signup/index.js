@@ -52,7 +52,7 @@ const SignupPage = () => {
         console.log(formData)
         try {
             const { firstName, lastName, email, phoneNumber, password, gender } = formData;
-            const response = await fetch(`${API_BASE_URL}/api/users/register`, {
+            const response = await fetch(`${API_BASE_URL}/api/users-reviewers/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

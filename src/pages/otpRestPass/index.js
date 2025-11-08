@@ -22,7 +22,7 @@ const OTPResetPage = () => {
                 return;
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/users/verify-otp`, {
+            const response = await fetch(`${API_BASE_URL}/api/users-reviewers/verify-otp`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -109,7 +109,7 @@ const OTPResetPage = () => {
         localStorage.setItem("otpTimer", timerDuration);
         const email = localStorage.getItem('email')
         try {
-            const response = await fetch(`${API_BASE_URL}/api/users/generate-new-otp`, {
+            const response = await fetch(`${API_BASE_URL}/api/users-reviewers/generate-new-otp`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -27,9 +27,13 @@ import SubscriptionModal from "./components/subscriptionModal";
 
 function AppContent() {
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem("user"));
-  const subcribed = user?.subscribed;
-  // Pages where m-11 should NOT be applied
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const subscribed = false;
+
+  console.log("User from localStorage:", localStorage.getItem("user"));
+  console.log("Parsed user:", user);
+  console.log("Subscribed status:", subscribed);
+
   const excludedPaths = [
     "/login",
     "/register",
@@ -41,16 +45,13 @@ function AppContent() {
     "/signup",
   ];
 
-  // Get subscription status from localStorage
-  const isSubscribed = localStorage.getItem("subscribed") === "true";
-
   return (
     <div className="font-montserrat">
-      {/* Conditionally apply margin */}
-      <div className={excludedPaths.includes(location.pathname) || subcribed || isSubscribed ? "" : "m-11"}>
-        <SubscriptionModal />
-      </div>
-
+      {subscribed && !excludedPaths.includes(location.pathname) && (
+        <div className="m-11">
+          <SubscriptionModal />
+        </div>
+      )}
       <SessionExpirationPopup />
 
       <Routes>
@@ -68,8 +69,8 @@ function AppContent() {
         <Route path="/progress-report" element={<ProgressReport />} />
         <Route path="/upcoming-tests" element={<UpcomingTests />} />
         <Route path="/profile" element={<StudentProfilePage />} />
-        <Route path="/take-jamb" element={<TakeJambQuiz />} />
-        <Route path="/take-waec" element={<TakeWaecQuiz />} />
+        <Route path="/review-jamb" element={<TakeJambQuiz />} />
+        <Route path="/review-waec" element={<TakeWaecQuiz />} />
         <Route path="/schedule-exam" element={<ScheuleExam />} />
         <Route path="/exam" element={<ExamPage />} />
         <Route path="/results" element={<Results2Page />} />
@@ -79,6 +80,7 @@ function AppContent() {
     </div>
   );
 }
+
 
 
 function App() {

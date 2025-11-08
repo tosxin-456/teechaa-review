@@ -28,7 +28,7 @@ const ExamHistory = () => {
             if (!userId) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/answer/${userId}`, {
+                const response = await fetch(`${API_BASE_URL}/api/answer-reviewers/${userId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -58,7 +58,7 @@ const ExamHistory = () => {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-100">
                 <RingLoader color="#4A90E2" size={50} />
-                <p className="ml-4 text-blue-600 font-medium">Loading your progress...</p>
+                <p className="ml-4 text-blue-600 font-medium">Loading your exam history...</p>
             </div>
         );
     }

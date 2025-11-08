@@ -102,10 +102,10 @@ const ScheuleExam = () => {
 
         return () => clearInterval(interval);
     }, [scheduledCountdown]);
-    
+
     return (
         <div>
-{/* Header with Back Button */}
+            {/* Header with Back Button */}
             <div className="flex items-center mb-2 mt-6 ">
                 <button
                     onClick={goBack}
@@ -295,10 +295,10 @@ const ScheuleExam = () => {
 
                 </div>
             </div>
-                {/* Footer */}
-                <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">
-                    <p>&copy; {new Date().getFullYear()} TeeChaa CBT Application. All rights reserved.</p>
-                </footer>
+            {/* Footer */}
+            <footer className="text-center text-gray-300 py-4 bg-[#2148C0] text-sm">
+                <p>&copy; {new Date().getFullYear()} TeeChaa CBT Application. All rights reserved.</p>
+            </footer>
         </div>
     );
 };

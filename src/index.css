@@ -5,3 +5,44 @@
 body {
   @apply font-sans;
 }
+
+.math-container {
+  @apply break-words whitespace-normal max-w-full overflow-hidden;
+}
+
+/* Ensure MathJax elements do not overflow and allow wrapping */
+mjx-math {
+  display: inline-block;
+  text-align: left;
+  line-height: 0;
+  text-indent: 0px;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 100%;
+  font-size-adjust: none;
+  letter-spacing: normal;
+  border-collapse: collapse;
+  overflow-wrap: break-word;  /* Ensures long content breaks */
+  word-spacing: normal;
+  white-space: break-spaces !important; /* Forces breaking spaces */
+  direction: ltr;
+  padding: 1px 0px;
+}
+
+/* Adjustments for MathJax containers */
+mjx-container[jax="CHTML"] {
+  line-height: 0;
+  white-space: normal !important; /* Ensures content does not stay on one line */
+}
+
+/* Align left-justified content */
+mjx-container[jax="CHTML"][justify="left"] {
+  text-align: center;
+}
+
+/* Display adjustments */
+mjx-container[jax="CHTML"][display="true"] {
+  display: inline;
+  text-align: left;
+  margin: 0px 0px;
+}

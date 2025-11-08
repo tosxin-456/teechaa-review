@@ -1,0 +1,12 @@
+.math-container {
+    overflow-wrap: break-word; /* Breaks long words */
+    word-wrap: break-word;
+    white-space: normal !important; /* Prevents forced inline display */
+    max-width: 100%; /* Prevents equations from exceeding container */
+    display: inline-block;
+}
+
+.math-container > span {
+    display: inline !important; /* Ensures proper breaking */
+}
+

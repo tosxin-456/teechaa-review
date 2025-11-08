@@ -39,7 +39,7 @@ const StudentProfilePage = () => {
         const fetchProfile = async () => {
             setIsLoading(true)
             try {
-                const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+                const response = await fetch(`${API_BASE_URL}/api/users-reviewers/${userId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -105,7 +105,7 @@ const StudentProfilePage = () => {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-100">
                 <ClipLoader color="#4A90E2" size={50} />
-                <p className="ml-4 text-blue-600 font-medium">Loading your progress...</p>
+                <p className="ml-4 text-blue-600 font-medium">Loading your profile...</p>
             </div>
         );
     }
@@ -121,7 +121,7 @@ const StudentProfilePage = () => {
             const formData = new FormData();
             formData.append("profile_image", selectedImage);
 
-            const response = await fetch(`${API_BASE_URL}/api/users/profile-image/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/users-reviewers/profile-image/${userId}`, {
                 method: "PATCH",
                 body: formData,
             });
@@ -149,7 +149,7 @@ const StudentProfilePage = () => {
 
     const handleUpdateDetails = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/users-reviewers/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -190,7 +190,7 @@ const StudentProfilePage = () => {
     // Delete profile
     const handleDelete = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/users-reviewers/${userId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -213,7 +213,7 @@ const StudentProfilePage = () => {
 
     const handleDeleteImage = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/users/profile-image/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/users-reviewers/profile-image/${userId}`, {
                 method: "DELETE",
             });
 

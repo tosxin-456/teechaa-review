@@ -42,7 +42,7 @@ const ProgressReport = () => {
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/answer/${userId}`, {
+                const response = await fetch(`${API_BASE_URL}/api/answer-reviewers/${userId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

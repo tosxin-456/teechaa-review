@@ -3,6 +3,7 @@ import { FaCheckCircle, FaTimesCircle, FaArrowLeft, FaArrowRight } from "react-i
 import { useLocation, useNavigate } from "react-router-dom";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import "katex/dist/katex.min.css";
+import { API_BASE_URL } from "../../config/apiConfig";
 
 const ResultPage = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -61,6 +62,8 @@ const ResultPage = () => {
         setIsSidebarOpen((prev) => !prev);
     };
 
+
+
     const handleSubjectChange = (subject) => {
         setSelectedSubject(subject);
         setCurrentQuestionIndex(0);
@@ -118,6 +121,21 @@ const ResultPage = () => {
                         </div>
 
                         <div className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md ">
+                            {currentQuestion.image && (
+                                <img
+                                    src={`${API_BASE_URL}${currentQuestion.image}`}
+                                    onError={(e) => {
+                                        if (e.target.src.endsWith(".jpg")) {
+                                            e.target.src = `${API_BASE_URL}${currentQuestion.image.replace(".jpg", ".png")}`; 
+                                        } else if (e.target.src.endsWith(".png")) {
+                                            e.target.src = `${API_BASE_URL}${currentQuestion.image.replace(".png", ".jpg")}`; 
+                                        }
+                                    }}
+                                    alt="Question Image"
+                                    className="mb-4 rounded-lg w-full max-h-60 object-contain"
+                                />
+                            )}
+
                             <h3 className="text-base sm:text-lg font-semibold mb-4 overflow-auto ">
                                 {renderWithMathJax(currentQuestion.question)}
                             </h3>
@@ -132,10 +150,10 @@ const ResultPage = () => {
                                         <div
                                             key={index}
                                             className={`p-4 rounded-lg shadow-md flex items-center justify-between border ${isOptionCorrect
-                                                    ? "border-green-500 bg-green-50"
-                                                    : isOptionSelected
-                                                        ? "border-red-500 bg-red-50"
-                                                        : "border-gray-300"
+                                                ? "border-green-500 bg-green-50"
+                                                : isOptionSelected
+                                                    ? "border-red-500 bg-red-50"
+                                                    : "border-gray-300"
                                                 }`}
                                         >
                                             <span>
@@ -167,8 +185,8 @@ const ResultPage = () => {
                             <button
                                 onClick={handleBack}
                                 className={`px-4 py-2 rounded-lg ${currentQuestionIndex > 0
-                                        ? "bg-[#2148C0] text-white hover:bg-blue-600"
-                                        : "bg-gray-300 text-gray-500"
+                                    ? "bg-[#2148C0] text-white hover:bg-blue-600"
+                                    : "bg-gray-300 text-gray-500"
                                     }`}
                                 disabled={currentQuestionIndex === 0}
                             >
@@ -177,8 +195,8 @@ const ResultPage = () => {
                             <button
                                 onClick={handleNext}
                                 className={`px-4 py-2 rounded-lg ${currentQuestionIndex < totalQuestions - 1
-                                        ? "bg-[#2148C0] text-white hover:bg-blue-600"
-                                        : "bg-gray-300 text-gray-500"
+                                    ? "bg-[#2148C0] text-white hover:bg-blue-600"
+                                    : "bg-gray-300 text-gray-500"
                                     }`}
                                 disabled={currentQuestionIndex === totalQuestions - 1}
                             >
@@ -200,8 +218,8 @@ const ResultPage = () => {
                                             key={index}
                                             onClick={() => setCurrentQuestionIndex(index)}
                                             className={`w-12 h-12 flex items-center justify-center rounded-lg font-bold ${isCorrectAttempt
-                                                    ? "bg-green-200 text-green-800"
-                                                    : "bg-red-50 text-red-800"
+                                                ? "bg-green-200 text-green-800"
+                                                : "bg-red-50 text-red-800"
                                                 } ${isSelected ? "ring-2 ring-blue-500" : ""}`}
                                         >
                                             {index + 1}

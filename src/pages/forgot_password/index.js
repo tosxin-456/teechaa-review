@@ -14,7 +14,7 @@ const ForgotPassword = () => {
 
         try {
             // Send email to the backend API to trigger OTP generation
-            const response = await fetch(`${API_BASE_URL}/api/users/forgot-password`, {
+            const response = await fetch(`${API_BASE_URL}/api/users-reviewers/forgot-password`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -26,7 +26,7 @@ const ResetPassword = () => {
         setLoading(true);
         const email = localStorage.getItem('email')
         try {
-            const response = await fetch(`${ API_BASE_URL}/api/users/update-password`, {
+            const response = await fetch(`${ API_BASE_URL}/api/users-reviewers/update-password`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

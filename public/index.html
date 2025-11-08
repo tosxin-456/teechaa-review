@@ -24,13 +24,38 @@
     rel="stylesheet">
   <script type="text/javascript" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
   </script>
+<script>
+  window.MathJax = {
+    tex: {
+      displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+      processEscapes: true,
+      processEnvironments: true,
+      multlineWidth: "85%",
+      tags: "ams",
+    },
+    chtml: {
+      scale: 1,
+      displayAlign: "left",
+      linebreaks: { automatic: true },
+    },
+    svg: {
+      fontCache: "global",
+      linebreaks: { automatic: true },
+    },
+    startup: {
+      pageReady: () => {
+        return MathJax.startup.defaultPageReady().then(() => {
+          MathJax.typeset();
+        });
+      },
+    },
+  };
+</script>
+<script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-  <script>
-    window.MathJax = {
-      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-      options: { renderActions: { addMenu: [] } }
-    };
-  </script>
+
+
 
 
   <!--

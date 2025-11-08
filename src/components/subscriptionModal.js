@@ -28,7 +28,7 @@ const SubscriptionModal = ({ onClose }) => {
 
     const handleSubmit = async () => {
         if (!fullName || !referenceId || !amountRaw || !image) {
-            console.log(amountRaw)
+            console.log(amountRaw);
             alert("Please fill all fields and upload an image.");
             return;
         }
@@ -38,16 +38,13 @@ const SubscriptionModal = ({ onClose }) => {
         formData.append("referenceId", referenceId);
         formData.append("amount", amountRaw);
         formData.append("image", image);
-
-        setIsOpen(false);
-        setShowBanner(false);
         onClose?.();
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/sub/${userId}`, {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
                 },
                 body: formData,
             });
@@ -56,13 +53,30 @@ const SubscriptionModal = ({ onClose }) => {
                 const errorData = await response.json();
                 throw new Error(errorData.message || "Failed to update user details");
             }
+
+            // Get the user from localStorage and update the subscription status
+            const user = JSON.parse(localStorage.getItem("user"));
+            if (user) {
+                user.subscribed = true;
+                localStorage.setItem("user", JSON.stringify(user));
+                setIsOpen(false);
+                setShowBanner(false);
+            }
+
             alert("User details updated successfully!");
-            localStorage.setItem('subcribed', true)
+            localStorage.setItem('subcribed', true); // You can keep this if needed
+
+            // Close modal and reload the page
+            setIsOpen(false);  // Close the modal
+            window.location.reload();  // Reload the page
+
         } catch (error) {
             console.error("Error updating payment details:", error.message);
             alert("Error submitting the data.");
         }
     };
+
+
 
     useEffect(() => {
         const checkTokenValidity = () => {
@@ -73,9 +87,11 @@ const SubscriptionModal = ({ onClose }) => {
             }
 
             try {
-                const decoded = jwtDecode(token);
-                if (decoded?.subscribed === false) {
-                    setShowBanner(true);
+                const user = JSON.parse(localStorage.getItem("user"));
+                const subcribed = user?.subscribed === false ? true : false;
+                if (user) {
+                    setShowBanner(false);
+                    console.log("here")
                 }
             } catch (error) {
                 console.error("Invalid token", error);
